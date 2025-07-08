@@ -274,15 +274,175 @@ class Izin extends BaseController
         $status = $request->getGet('status') ?? ''; // Default: semua status
         $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
 
+        // Ambil daftar pegawai untuk filter
+        $pegawai_list = $this->pegawaiModel->orderBy('namapegawai', 'ASC')->findAll();
+
+        $data = [
+            'title' => 'Laporan Pengajuan Izin',
+            'pegawai_list' => $pegawai_list,
+            'filter' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'status' => $status,
+                'pegawai_id' => $pegawaiId
+            ]
+        ];
+
+        return view('admin/izin/report_preview', $data);
+    }
+
+    /**
+     * Menampilkan laporan izin (partial untuk AJAX)
+     */
+    public function report_partial()
+    {
+        $request = $this->request;
+
+        // Filter data
+        $tanggalAwal = $request->getGet('tanggal_awal') ?? $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
+        $tanggalAkhir = $request->getGet('tanggal_akhir') ?? $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
+        $status = $request->getGet('status') ?? ''; // Default: semua status
+        $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
+
+        // Log filter values
+        log_message('debug', "IZIN REPORT_PARTIAL: tanggalAwal={$tanggalAwal}, tanggalAkhir={$tanggalAkhir}, status={$status}, pegawaiId={$pegawaiId}");
+
+        // Ensure dates are in Y-m-d format for database comparison
+        if (!empty($tanggalAwal)) {
+            // Check if the date is in a valid format
+            $date = \DateTime::createFromFormat('Y-m-d', $tanggalAwal);
+            if (!$date || $date->format('Y-m-d') !== $tanggalAwal) {
+                // Try to parse the date
+                $timestamp = strtotime($tanggalAwal);
+                if ($timestamp !== false) {
+                    $tanggalAwal = date('Y-m-d', $timestamp);
+                }
+            }
+        }
+
+        if (!empty($tanggalAkhir)) {
+            // Check if the date is in a valid format
+            $date = \DateTime::createFromFormat('Y-m-d', $tanggalAkhir);
+            if (!$date || $date->format('Y-m-d') !== $tanggalAkhir) {
+                // Try to parse the date
+                $timestamp = strtotime($tanggalAkhir);
+                if ($timestamp !== false) {
+                    $tanggalAkhir = date('Y-m-d', $timestamp);
+                }
+            }
+        }
+
         // Query builder
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
-        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik');
+        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
         $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
+        $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
         // Filter berdasarkan tanggal
-        $builder->where('tanggalmulaiizin >=', $startDate);
-        $builder->where('tanggalselesaiizin <=', $endDate);
+        if (!empty($tanggalAwal)) {
+            $builder->where('tanggalmulaiizin >=', $tanggalAwal);
+            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by tanggalmulaiizin >= {$tanggalAwal}");
+        }
+
+        if (!empty($tanggalAkhir)) {
+            $builder->where('tanggalselesaiizin <=', $tanggalAkhir);
+            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by tanggalselesaiizin <= {$tanggalAkhir}");
+        }
+
+        // Filter berdasarkan status
+        if ($status !== '') {
+            $builder->where('statusizin', $status);
+            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by statusizin = {$status}");
+        }
+
+        // Filter berdasarkan pegawai
+        if ($pegawaiId !== '') {
+            $builder->where('pegawai_id', $pegawaiId);
+            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by pegawai_id = {$pegawaiId}");
+        }
+
+        $builder->orderBy('izin.created_at', 'DESC');
+
+        // Get the SQL query string for debugging
+        $sql = $builder->getCompiledSelect();
+        log_message('debug', "IZIN REPORT_PARTIAL SQL: {$sql}");
+
+        $izinList = $builder->get()->getResultArray();
+
+        // Log the number of results
+        log_message('debug', "IZIN REPORT_PARTIAL: Found " . count($izinList) . " results");
+
+        // If no results, try a more lenient query
+        if (empty($izinList)) {
+            log_message('debug', "IZIN REPORT_PARTIAL: No results found, trying a more lenient query");
+
+            // Create a new query without date filters
+            $builder = $db->table('izin');
+            $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
+            $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
+            $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
+
+            // Only apply non-date filters
+            if ($status !== '') {
+                $builder->where('statusizin', $status);
+            }
+
+            if ($pegawaiId !== '') {
+                $builder->where('pegawai_id', $pegawaiId);
+            }
+
+            $builder->orderBy('izin.created_at', 'DESC');
+
+            // Get the SQL query string for debugging
+            $sql = $builder->getCompiledSelect();
+            log_message('debug', "IZIN REPORT_PARTIAL LENIENT SQL: {$sql}");
+
+            $izinList = $builder->get()->getResultArray();
+            log_message('debug', "IZIN REPORT_PARTIAL LENIENT: Found " . count($izinList) . " results");
+        }
+
+        $data = [
+            'izin' => $izinList,
+            'filters' => [
+                'created_at' => $tanggalAwal,
+                'created_at' => $tanggalAkhir,
+                'status' => $status,
+                'pegawai_id' => $pegawaiId
+            ]
+        ];
+
+        return view('admin/izin/report_partial', $data);
+    }
+
+    /**
+     * Menghasilkan laporan izin dalam format PDF
+     */
+    public function generatePdf()
+    {
+        $request = $this->request;
+
+        // Filter data
+        $tanggalAwal = $request->getGet('tanggal_awal') ?? $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
+        $tanggalAkhir = $request->getGet('tanggal_akhir') ?? $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
+        $status = $request->getGet('status') ?? ''; // Default: semua status
+        $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
+
+        // Query builder
+        $db = \Config\Database::connect();
+        $builder = $db->table('izin');
+        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
+        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
+        $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
+
+        // Filter berdasarkan tanggal
+        if (!empty($tanggalAwal)) {
+            $builder->where('tanggalmulaiizin >=', $tanggalAwal);
+        }
+
+        if (!empty($tanggalAkhir)) {
+            $builder->where('tanggalselesaiizin <=', $tanggalAkhir);
+        }
 
         // Filter berdasarkan status
         if ($status !== '') {
@@ -297,27 +457,48 @@ class Izin extends BaseController
         $builder->orderBy('izin.created_at', 'DESC');
         $izinList = $builder->get()->getResultArray();
 
+        // Ambil logo perusahaan
+        $logoPath = ROOTPATH . 'public/image/logo.png';
+
+        // Konversi logo ke base64 jika ada
+        if (file_exists($logoPath)) {
+            $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
+            $logoData = file_get_contents($logoPath);
+            $logoBase64 = 'data:image/' . $logoType . ';base64,' . base64_encode($logoData);
+        } else {
+            $logoBase64 = '';
+        }
+
+        // Format tanggal untuk judul
+        $periodeText = '';
+        if (!empty($tanggalAwal) && !empty($tanggalAkhir)) {
+            $periodeText = ' Periode ' . date('d-m-Y', strtotime($tanggalAwal)) . ' s/d ' . date('d-m-Y', strtotime($tanggalAkhir));
+        }
+
         $data = [
-            'title' => 'Laporan Pengajuan Izin',
-            'izin_list' => $izinList,
-            'pegawai_list' => $this->pegawaiModel->findAll(),
-            'filter' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
+            'title' => 'Laporan Pengajuan Izin' . $periodeText,
+            'izin' => $izinList,
+            'filters' => [
+                'tanggal_awal' => $tanggalAwal,
+                'tanggal_akhir' => $tanggalAkhir,
                 'status' => $status,
                 'pegawai_id' => $pegawaiId
-            ]
+            ],
+            'logo' => $logoBase64
         ];
 
-        return view('admin/izin/report', $data);
-    }
+        // Load PDF helper
+        $pdfHelper = new \App\Helpers\PdfHelper();
 
-    /**
-     * Export laporan izin ke Excel
-     */
-    public function export()
-    {
-        // Redirect kembali ke halaman report dengan pesan
-        return redirect()->to('admin/izin/report')->with('error', 'Fitur export belum tersedia. Silakan instal library PhpSpreadsheet terlebih dahulu.');
+        // Generate PDF
+        $html = view('admin/izin/pdf_template', $data);
+
+        // Filename dengan timestamp
+        $filename = 'laporan_izin_' . date('Ymd_His') . '.pdf';
+
+        // Generate PDF
+        return $pdfHelper->generate($html, $filename, 'A4', 'landscape', [
+            'attachment' => false // true untuk download, false untuk preview di browser
+        ]);
     }
 }

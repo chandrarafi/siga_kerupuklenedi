@@ -152,50 +152,6 @@ class Izin extends BaseController
         // NONAKTIFKAN validasi tanggal berurutan
         $isConsecutive = true; // Anggap selalu berurutan
 
-        // Hapus validasi lama
-        /*
-        // Validasi tanggal berurutan - pendekatan baru yang lebih sederhana
-        $isConsecutive = true;
-        
-        // Debug untuk melihat tanggal yang dipilih
-        log_message('debug', 'Tanggal yang dipilih: ' . implode(', ', $selectedDatesArray));
-        
-        // Jika hanya satu tanggal, maka otomatis berurutan
-        if (count($selectedDatesArray) <= 1) {
-            $isConsecutive = true;
-        } 
-        // Jika lebih dari satu tanggal, lakukan pengecekan
-        else {
-            // PENDEKATAN SANGAT SEDERHANA:
-            // 1. Tanggal sudah diurutkan dengan sort() sebelumnya
-            // 2. Kita hanya perlu memastikan tidak ada tanggal yang sama
-            // 3. Kemudian cek selisih antara tanggal awal dan akhir
-            
-            // Pastikan tidak ada tanggal duplikat
-            $uniqueDates = array_unique($selectedDatesArray);
-            if (count($uniqueDates) !== count($selectedDatesArray)) {
-                $isConsecutive = false;
-                log_message('debug', 'Terdapat tanggal duplikat: ' . implode(', ', $selectedDatesArray));
-            } else {
-                // Hitung selisih antara tanggal pertama dan terakhir
-                $firstDate = strtotime($selectedDatesArray[0]);
-                $lastDate = strtotime($selectedDatesArray[count($selectedDatesArray) - 1]);
-                
-                // Harusnya selisihnya persis jumlah hari - 1
-                $expectedDays = count($selectedDatesArray) - 1;
-                $actualDays = ($lastDate - $firstDate) / 86400; // 86400 detik dalam sehari
-                
-                log_message('debug', 'Validasi berurutan: Selisih seharusnya ' . $expectedDays . ' hari, aktual ' . $actualDays . ' hari');
-                
-                // Toleransi karena mungkin ada masalah floating point
-                $isConsecutive = (abs($actualDays - $expectedDays) < 0.01);
-            }
-        }
-        
-        log_message('debug', 'Hasil akhir validasi tanggal berurutan: ' . ($isConsecutive ? 'Berurutan' : 'Tidak berurutan'));
-        */
-
-        // Upload file bukti jika ada
         $buktiName = '';
 
         if ($bukti && $bukti->isValid() && !$bukti->hasMoved()) {
@@ -532,48 +488,7 @@ class Izin extends BaseController
         // NONAKTIFKAN validasi tanggal berurutan
         $isConsecutive = true; // Anggap selalu berurutan
 
-        // Hapus validasi lama
-        /*
-        // Validasi tanggal berurutan - pendekatan baru yang lebih sederhana
-        $isConsecutive = true;
-        
-        // Debug untuk melihat tanggal yang dipilih
-        log_message('debug', 'Tanggal yang dipilih (update): ' . implode(', ', $selectedDatesArray));
-        
-        // Jika hanya satu tanggal, maka otomatis berurutan
-        if (count($selectedDatesArray) <= 1) {
-            $isConsecutive = true;
-        } 
-        // Jika lebih dari satu tanggal, lakukan pengecekan
-        else {
-            // PENDEKATAN SANGAT SEDERHANA:
-            // 1. Tanggal sudah diurutkan dengan sort() sebelumnya
-            // 2. Kita hanya perlu memastikan tidak ada tanggal yang sama
-            // 3. Kemudian cek selisih antara tanggal awal dan akhir
-            
-            // Pastikan tidak ada tanggal duplikat
-            $uniqueDates = array_unique($selectedDatesArray);
-            if (count($uniqueDates) !== count($selectedDatesArray)) {
-                $isConsecutive = false;
-                log_message('debug', 'Terdapat tanggal duplikat (update): ' . implode(', ', $selectedDatesArray));
-            } else {
-                // Hitung selisih antara tanggal pertama dan terakhir
-                $firstDate = strtotime($selectedDatesArray[0]);
-                $lastDate = strtotime($selectedDatesArray[count($selectedDatesArray) - 1]);
-                
-                // Harusnya selisihnya persis jumlah hari - 1
-                $expectedDays = count($selectedDatesArray) - 1;
-                $actualDays = ($lastDate - $firstDate) / 86400; // 86400 detik dalam sehari
-                
-                log_message('debug', 'Validasi berurutan (update): Selisih seharusnya ' . $expectedDays . ' hari, aktual ' . $actualDays . ' hari');
-                
-                // Toleransi karena mungkin ada masalah floating point
-                $isConsecutive = (abs($actualDays - $expectedDays) < 0.01);
-            }
-        }
-        
-        log_message('debug', 'Hasil akhir validasi tanggal berurutan (update): ' . ($isConsecutive ? 'Berurutan' : 'Tidak berurutan'));
-        */
+
 
         // Bersihkan array dari nilai kosong dan trim spasi
         $selectedDatesArray = array_map('trim', $selectedDatesArray);

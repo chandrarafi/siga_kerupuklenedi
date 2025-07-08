@@ -372,7 +372,7 @@
                 </div>
 
                 <!-- Tips Pengajuan -->
-                <div class="form-section">
+                <!-- <div class="form-section">
                     <h6 class="form-section-title"><i class="fas fa-lightbulb"></i>Tips Pengajuan Izin</h6>
 
                     <ul class="tips-list">
@@ -381,7 +381,7 @@
                         <li>Untuk izin sakit lebih dari 2 hari, wajib melampirkan surat dokter</li>
                         <li>Cek status pengajuan izin Anda secara berkala</li>
                     </ul>
-                </div>
+                </div> -->
 
                 <!-- Buttons -->
                 <div class="d-flex justify-content-between mt-4">

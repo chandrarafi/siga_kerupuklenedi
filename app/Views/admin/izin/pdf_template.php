@@ -30,51 +30,45 @@
 
         .header-table td {
             border: none;
-            vertical-align: middle;
-            padding: 0;
+            padding: 5px;
+            vertical-align: top;
         }
 
         .logo-cell {
-            width: 120px;
-            text-align: left;
+            width: 15%;
+            text-align: center;
         }
 
-        .text-cell {
+        .title-cell {
+            width: 70%;
             text-align: center;
+        }
+
+        .info-cell {
+            width: 15%;
+            text-align: right;
+            font-size: 10px;
         }
 
         .logo-img {
-            width: 100px;
-            height: auto;
+            max-width: 80px;
+            max-height: 80px;
         }
 
-        .header h1 {
+        h1 {
+            font-size: 18px;
             margin: 0;
-            font-size: 20px;
-            font-weight: bold;
-            color: #1a3c6e;
-            text-align: center;
+            padding: 0;
         }
 
-        .header p {
-            margin: 5px 0;
-            color: #333;
-            text-align: center;
-        }
-
-        .header h2 {
-            margin: 15px 0 5px 0;
-            color: #1a3c6e;
+        h2 {
             font-size: 16px;
-            text-align: center;
+            margin: 5px 0;
+            padding: 0;
         }
 
-        .info {
-            margin-bottom: 15px;
-        }
-
-        .info-item {
-            margin-bottom: 5px;
+        p {
+            margin: 5px 0;
         }
 
         table {
@@ -83,38 +77,90 @@
             margin-bottom: 20px;
         }
 
-        table.data-table,
-        .data-table th,
-        .data-table td {
-            border: 1px solid #ddd;
-        }
-
         th,
         td {
+            border: 1px solid #ddd;
             padding: 8px;
-            text-align: center;
+            font-size: 11px;
         }
 
         th {
-            background-color: #f5f8fc;
-            color: #1a3c6e;
+            background-color: #1a3c6e;
+            color: white;
+            font-weight: bold;
+            text-align: center;
         }
 
-        .footer {
-            margin-top: 30px;
-            text-align: right;
-        }
-
-        .footer p {
-            margin: 5px 0;
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
 
         .text-center {
             text-align: center;
         }
 
-        .text-left {
-            text-align: left;
+        .text-right {
+            text-align: right;
+        }
+
+        .status-approved {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .status-rejected {
+            color: red;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        .filter-info {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            width: 30%;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-box.total {
+            background-color: #cfe2ff;
+        }
+
+        .stat-box.approved {
+            background-color: #d1e7dd;
+        }
+
+        .stat-box.pending {
+            background-color: #fff3cd;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -128,83 +174,135 @@
                         <img src="<?= $logo ?>" alt="Logo" class="logo-img">
                     <?php endif; ?>
                 </td>
-                <td class="text-cell">
-                    <h1>SISTEM INFORMASI KERUPUK LEN EDI</h1>
-                    <p>Pauh Kambar, Kabupaten Padang Pariaman</p>
-                    <p>Telp: (0751) 123456 | Email: info@kerupuklenedi.com</p>
+                <td class="title-cell">
+                    <h1>LAPORAN PENGAJUAN IZIN</h1>
+                    <h2>PT. KERUPUK LENEDI</h2>
+                    <p>Jl. Raya Kerupuk No. 123, Padang, Sumatera Barat</p>
                 </td>
-                <td class="logo-cell">
-                    <!-- Sel kosong untuk menyeimbangkan tata letak -->
+                <td class="info-cell">
+                    <p>Tanggal Cetak: <?= date('d-m-Y') ?></p>
+                    <p>Waktu: <?= date('H:i:s') ?></p>
                 </td>
             </tr>
         </table>
-        <h2><?= $title ?></h2>
     </div>
 
-    <div class="info">
-        <?php if (!empty($filters['status']) || !empty($filters['jenis']) || !empty($filters['tanggal_awal']) || !empty($filters['tanggal_akhir'])): ?>
-            <?php if (!empty($filters['status'])): ?>
-                <div class="info-item">
-                    <strong>Status:</strong> <?= $filters['status'] ?>
-                </div>
-            <?php endif; ?>
+    <!-- Filter Info -->
+    <div class="filter-info">
+        <strong>Filter:</strong>
+        <?php
+        $filterText = [];
 
-            <?php if (!empty($filters['jenis'])): ?>
-                <div class="info-item">
-                    <strong>Jenis Izin:</strong> <?= $filters['jenis'] ?>
-                </div>
-            <?php endif; ?>
+        if (!empty($filters['tanggal_awal']) && !empty($filters['tanggal_akhir'])) {
+            $filterText[] = "Periode: " . date('d-m-Y', strtotime($filters['tanggal_awal'])) . " s/d " . date('d-m-Y', strtotime($filters['tanggal_akhir']));
+        }
 
-            <?php if (!empty($filters['tanggal_awal']) && !empty($filters['tanggal_akhir'])): ?>
-                <div class="info-item">
-                    <strong>Periode:</strong> <?= date('d-m-Y', strtotime($filters['tanggal_awal'])) ?> s/d <?= date('d-m-Y', strtotime($filters['tanggal_akhir'])) ?>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
+        if (!empty($filters['status'])) {
+            $statusText = '';
+            if ($filters['status'] == '0') $statusText = 'Menunggu';
+            elseif ($filters['status'] == '1') $statusText = 'Disetujui';
+            elseif ($filters['status'] == '2') $statusText = 'Ditolak';
+            $filterText[] = "Status: " . $statusText;
+        }
 
-        <div class="info-item">
-            <strong>Tanggal Cetak:</strong> <?= date('d-m-Y') ?>
+        if (!empty($filters['pegawai_id'])) {
+            // Ambil nama pegawai
+            $db = \Config\Database::connect();
+            $pegawai = $db->table('pegawai')
+                ->where('idpegawai', $filters['pegawai_id'])
+                ->get()
+                ->getRowArray();
+            if ($pegawai) {
+                $filterText[] = "Pegawai: " . $pegawai['namapegawai'];
+            }
+        }
+
+        echo !empty($filterText) ? implode(' | ', $filterText) : "Semua Data";
+        ?>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-container">
+        <div class="stat-box total">
+            <p>Total Pengajuan</p>
+            <div class="stat-value"><?= count($izin) ?></div>
+        </div>
+        <div class="stat-box approved">
+            <p>Disetujui</p>
+            <?php
+            $approved = array_filter($izin, function ($item) {
+                return $item['statusizin'] == 1;
+            });
+            ?>
+            <div class="stat-value"><?= count($approved) ?></div>
+        </div>
+        <div class="stat-box pending">
+            <p>Menunggu/Ditolak</p>
+            <?php
+            $pending = array_filter($izin, function ($item) {
+                return $item['statusizin'] != 1;
+            });
+            ?>
+            <div class="stat-value"><?= count($pending) ?></div>
         </div>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Nama Pegawai</th>
-                <th>Nama Jabatan</th>
-                <th>Tanggal Mulai</th>
-                <th>Tanggal Selesai</th>
-                <th>Jenis Izin</th>
-                <th>Alasan</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($izin)): ?>
+    <!-- Table -->
+    <?php if (empty($izin)): ?>
+        <p class="text-center">Tidak ada data izin yang ditemukan dengan filter yang dipilih.</p>
+    <?php else: ?>
+        <table>
+            <thead>
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada data</td>
+                    <th class="text-center">No</th>
+                    <th>Kode Izin</th>
+                    <th>Nama Pegawai</th>
+                    <th>NIK</th>
+                    <th>Jabatan</th>
+                    <th>Jenis Izin</th>
+                    <th>Tanggal Mulai</th>
+                    <th>Tanggal Selesai</th>
+                    <th>Lama Izin</th>
+                    <th class="text-center">Status</th>
                 </tr>
-            <?php else: ?>
-                <?php $no = 1;
-                foreach ($izin as $row): ?>
+            </thead>
+            <tbody>
+                <?php $no = 1; ?>
+                <?php foreach ($izin as $item): ?>
                     <tr>
-                        <td><?= $no++ ?></td>
-                        <td class="text-left"><?= $row['namapegawai'] ?></td>
-                        <td class="text-left"><?= $row['namajabatan'] ?></td>
-                        <td><?= date('d-m-Y', strtotime($row['tanggalmulaiizin'])) ?></td>
-                        <td><?= date('d-m-Y', strtotime($row['tanggalselesaiizin'])) ?></td>
-                        <td class="text-left"><?= $row['jenisizin'] ?></td>
-                        <td class="text-left"><?= $row['alasan'] ?></td>
+                        <td class="text-center"><?= $no++ ?></td>
+                        <td><?= $item['idizin'] ?></td>
+                        <td><?= $item['namapegawai'] ?></td>
+                        <td><?= $item['nik'] ?></td>
+                        <td><?= $item['namajabatan'] ?? '-' ?></td>
+                        <td><?= $item['jenisizin'] ?></td>
+                        <td><?= date('d-m-Y', strtotime($item['tanggalmulaiizin'])) ?></td>
+                        <td><?= date('d-m-Y', strtotime($item['tanggalselesaiizin'])) ?></td>
+                        <td>
+                            <?php
+                            $start = new DateTime($item['tanggalmulaiizin']);
+                            $end = new DateTime($item['tanggalselesaiizin']);
+                            $interval = $start->diff($end);
+                            echo $interval->days + 1 . ' hari';
+                            ?>
+                        </td>
+                        <td class="text-center">
+                            <?php if ($item['statusizin'] == 0): ?>
+                                <span class="status-pending">Menunggu</span>
+                            <?php elseif ($item['statusizin'] == 1): ?>
+                                <span class="status-approved">Disetujui</span>
+                            <?php elseif ($item['statusizin'] == 2): ?>
+                                <span class="status-rejected">Ditolak</span>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    <?php endif; ?>
 
     <div class="footer">
-        <p>Padang, <?= date('d F Y') ?></p>
-        <br><br><br>
-        <p>Pimpinan</p>
+        <p>Dicetak pada: <?= date('d-m-Y H:i:s') ?></p>
     </div>
 </body>
 

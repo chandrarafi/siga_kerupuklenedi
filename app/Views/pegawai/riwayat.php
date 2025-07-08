@@ -128,20 +128,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <?php if ($absen['jammasuk']): ?>
                                         <span class="font-medium"><?= date('H:i', strtotime($absen['jammasuk'])) ?></span>
-                                        <?php
-                                        $jamMasuk = strtotime($absen['jammasuk']);
-                                        $jamMasukIdeal = strtotime($absen['tanggal'] . ' 08:00:00');
-                                        $selisih = $jamMasuk - $jamMasukIdeal;
 
-                                        if ($selisih > 0): ?>
-                                            <div class="text-xs text-red-500">
-                                                Terlambat <?= floor($selisih / 60) ?> menit
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="text-xs text-green-500">
-                                                Tepat waktu
-                                            </div>
-                                        <?php endif; ?>
                                     <?php else: ?>
                                         -
                                     <?php endif; ?>

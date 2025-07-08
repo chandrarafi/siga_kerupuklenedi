@@ -73,6 +73,8 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('izin/reject/(:num)', 'Admin\Izin::reject/$1');
         $routes->post('izin/reject/(:segment)', 'Admin\Izin::reject/$1');
         $routes->get('izin/report', 'Admin\Izin::report');
+        $routes->get('izin/report_partial', 'Admin\Izin::report_partial');
+        $routes->get('izin/generatePdf', 'Admin\Izin::generatePdf');
 
         // Lembur
         $routes->get('lembur', 'Admin\Lembur::index');

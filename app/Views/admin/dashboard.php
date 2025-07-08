@@ -166,34 +166,7 @@
         </div>
     </div>
 
-    <!-- Recent Employees -->
-    <div class="col-xl-4 col-lg-5 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">Karyawan Terbaru</h6>
-                <a href="<?= site_url('admin/karyawan') ?>" class="btn btn-sm btn-primary">
-                    <i class="bi bi-people me-1"></i> Lihat Semua
-                </a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="recentEmployees">
-                        <thead>
-                            <tr>
-                                <th>NIP</th>
-                                <th>Nama</th>
-                                <th>Jabatan</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Data will be loaded by AJAX -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <!-- Activity & Tasks Row -->
