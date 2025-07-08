@@ -33,8 +33,15 @@ class Izin extends BaseController
         // Query builder
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
-        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik');
-        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
+        $builder->select('
+            izin.*,
+            pegawai.namapegawai,
+            pegawai.nik,
+            jabatan.namajabatan,
+            izin.alasan
+        ');
+        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left');
+        $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
         // Filter berdasarkan status
         if ($status === 'pending') {
@@ -299,13 +306,10 @@ class Izin extends BaseController
         $request = $this->request;
 
         // Filter data
-        $tanggalAwal = $request->getGet('tanggal_awal') ?? $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
-        $tanggalAkhir = $request->getGet('tanggal_akhir') ?? $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
+        $tanggalAwal = $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
+        $tanggalAkhir = $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
         $status = $request->getGet('status') ?? ''; // Default: semua status
         $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
-
-        // Log filter values
-        log_message('debug', "IZIN REPORT_PARTIAL: tanggalAwal={$tanggalAwal}, tanggalAkhir={$tanggalAkhir}, status={$status}, pegawaiId={$pegawaiId}");
 
         // Ensure dates are in Y-m-d format for database comparison
         if (!empty($tanggalAwal)) {
@@ -335,81 +339,80 @@ class Izin extends BaseController
         // Query builder
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
-        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
-        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
+        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan, izin.alasan');
+        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
-        // Filter berdasarkan tanggal
-        if (!empty($tanggalAwal)) {
+        // Filter berdasarkan tanggal (dengan pendekatan overlap)
+        if (!empty($tanggalAwal) && !empty($tanggalAkhir)) {
+            // Mencari izin yang overlap dengan tanggal filter (tidak terlalu ketat)
+            $builder->groupStart()
+                ->where('tanggalmulaiizin <=', $tanggalAkhir) // izin dimulai sebelum periode filter berakhir
+                ->where('tanggalselesaiizin >=', $tanggalAwal) // izin berakhir setelah periode filter dimulai
+                ->groupEnd();
+        } elseif (!empty($tanggalAwal)) {
             $builder->where('tanggalmulaiizin >=', $tanggalAwal);
-            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by tanggalmulaiizin >= {$tanggalAwal}");
-        }
-
-        if (!empty($tanggalAkhir)) {
+        } elseif (!empty($tanggalAkhir)) {
             $builder->where('tanggalselesaiizin <=', $tanggalAkhir);
-            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by tanggalselesaiizin <= {$tanggalAkhir}");
         }
 
         // Filter berdasarkan status
         if ($status !== '') {
             $builder->where('statusizin', $status);
-            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by statusizin = {$status}");
         }
 
         // Filter berdasarkan pegawai
         if ($pegawaiId !== '') {
             $builder->where('pegawai_id', $pegawaiId);
-            log_message('debug', "IZIN REPORT_PARTIAL: Filtering by pegawai_id = {$pegawaiId}");
         }
 
+        // Set default ordering
         $builder->orderBy('izin.created_at', 'DESC');
-
-        // Get the SQL query string for debugging
-        $sql = $builder->getCompiledSelect();
-        log_message('debug', "IZIN REPORT_PARTIAL SQL: {$sql}");
 
         $izinList = $builder->get()->getResultArray();
 
-        // Log the number of results
-        log_message('debug', "IZIN REPORT_PARTIAL: Found " . count($izinList) . " results");
+        // Pastikan data pegawai ada
+        foreach ($izinList as $key => $item) {
+            if (empty($item['namapegawai'])) {
+                // Coba ambil data pegawai secara manual
+                $pegawai = $db->table('pegawai')
+                    ->where('idpegawai', $item['pegawai_id'])
+                    ->get()
+                    ->getRowArray();
 
-        // If no results, try a more lenient query
-        if (empty($izinList)) {
-            log_message('debug', "IZIN REPORT_PARTIAL: No results found, trying a more lenient query");
-
-            // Create a new query without date filters
-            $builder = $db->table('izin');
-            $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
-            $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
-            $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
-
-            // Only apply non-date filters
-            if ($status !== '') {
-                $builder->where('statusizin', $status);
+                if ($pegawai) {
+                    $izinList[$key]['namapegawai'] = $pegawai['namapegawai'];
+                }
             }
 
-            if ($pegawaiId !== '') {
-                $builder->where('pegawai_id', $pegawaiId);
+            // Perbaiki data jabatan jika tidak ada
+            if (empty($item['namajabatan']) && !empty($item['pegawai_id'])) {
+                // Ambil data jabatan melalui pegawai
+                $jabatan = $db->table('pegawai')
+                    ->select('jabatan.namajabatan')
+                    ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left')
+                    ->where('pegawai.idpegawai', $item['pegawai_id'])
+                    ->get()
+                    ->getRowArray();
+
+                if ($jabatan && !empty($jabatan['namajabatan'])) {
+                    $izinList[$key]['namajabatan'] = $jabatan['namajabatan'];
+                }
             }
-
-            $builder->orderBy('izin.created_at', 'DESC');
-
-            // Get the SQL query string for debugging
-            $sql = $builder->getCompiledSelect();
-            log_message('debug', "IZIN REPORT_PARTIAL LENIENT SQL: {$sql}");
-
-            $izinList = $builder->get()->getResultArray();
-            log_message('debug', "IZIN REPORT_PARTIAL LENIENT: Found " . count($izinList) . " results");
         }
+
+        // Hitung total izin
+        $total_izin = count($izinList);
 
         $data = [
             'izin' => $izinList,
             'filters' => [
-                'created_at' => $tanggalAwal,
-                'created_at' => $tanggalAkhir,
+                'start_date' => $tanggalAwal,
+                'end_date' => $tanggalAkhir,
                 'status' => $status,
                 'pegawai_id' => $pegawaiId
-            ]
+            ],
+            'total_izin' => $total_izin
         ];
 
         return view('admin/izin/report_partial', $data);
@@ -423,25 +426,35 @@ class Izin extends BaseController
         $request = $this->request;
 
         // Filter data
-        $tanggalAwal = $request->getGet('tanggal_awal') ?? $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
-        $tanggalAkhir = $request->getGet('tanggal_akhir') ?? $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
+        $startDate = $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
+        $endDate = $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
         $status = $request->getGet('status') ?? ''; // Default: semua status
         $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
 
         // Query builder
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
-        $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
-        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id');
+        $builder->select('
+            izin.*,
+            pegawai.namapegawai,
+            pegawai.nik,
+            jabatan.namajabatan,
+            izin.alasan
+        ');
+        $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
-        // Filter berdasarkan tanggal
-        if (!empty($tanggalAwal)) {
-            $builder->where('tanggalmulaiizin >=', $tanggalAwal);
-        }
-
-        if (!empty($tanggalAkhir)) {
-            $builder->where('tanggalselesaiizin <=', $tanggalAkhir);
+        // Filter berdasarkan tanggal (dengan pendekatan overlap)
+        if (!empty($startDate) && !empty($endDate)) {
+            // Mencari izin yang overlap dengan tanggal filter (tidak terlalu ketat)
+            $builder->groupStart()
+                ->where('tanggalmulaiizin <=', $endDate) // izin dimulai sebelum periode filter berakhir
+                ->where('tanggalselesaiizin >=', $startDate) // izin berakhir setelah periode filter dimulai
+                ->groupEnd();
+        } elseif (!empty($startDate)) {
+            $builder->where('tanggalmulaiizin >=', $startDate);
+        } elseif (!empty($endDate)) {
+            $builder->where('tanggalselesaiizin <=', $endDate);
         }
 
         // Filter berdasarkan status
@@ -456,6 +469,36 @@ class Izin extends BaseController
 
         $builder->orderBy('izin.created_at', 'DESC');
         $izinList = $builder->get()->getResultArray();
+
+        // Pastikan data pegawai ada
+        foreach ($izinList as $key => $item) {
+            if (empty($item['namapegawai'])) {
+                // Coba ambil data pegawai secara manual
+                $pegawai = $db->table('pegawai')
+                    ->where('idpegawai', $item['pegawai_id'])
+                    ->get()
+                    ->getRowArray();
+
+                if ($pegawai) {
+                    $izinList[$key]['namapegawai'] = $pegawai['namapegawai'];
+                }
+            }
+
+            // Perbaiki data jabatan jika tidak ada
+            if (empty($item['namajabatan']) && !empty($item['pegawai_id'])) {
+                // Ambil data jabatan melalui pegawai
+                $jabatan = $db->table('pegawai')
+                    ->select('jabatan.namajabatan')
+                    ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left')
+                    ->where('pegawai.idpegawai', $item['pegawai_id'])
+                    ->get()
+                    ->getRowArray();
+
+                if ($jabatan && !empty($jabatan['namajabatan'])) {
+                    $izinList[$key]['namajabatan'] = $jabatan['namajabatan'];
+                }
+            }
+        }
 
         // Ambil logo perusahaan
         $logoPath = ROOTPATH . 'public/image/logo.png';
@@ -471,16 +514,16 @@ class Izin extends BaseController
 
         // Format tanggal untuk judul
         $periodeText = '';
-        if (!empty($tanggalAwal) && !empty($tanggalAkhir)) {
-            $periodeText = ' Periode ' . date('d-m-Y', strtotime($tanggalAwal)) . ' s/d ' . date('d-m-Y', strtotime($tanggalAkhir));
+        if (!empty($startDate) && !empty($endDate)) {
+            $periodeText = ' Periode ' . date('d-m-Y', strtotime($startDate)) . ' s/d ' . date('d-m-Y', strtotime($endDate));
         }
 
         $data = [
             'title' => 'Laporan Pengajuan Izin' . $periodeText,
             'izin' => $izinList,
             'filters' => [
-                'tanggal_awal' => $tanggalAwal,
-                'tanggal_akhir' => $tanggalAkhir,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
                 'status' => $status,
                 'pegawai_id' => $pegawaiId
             ],
@@ -500,5 +543,177 @@ class Izin extends BaseController
         return $pdfHelper->generate($html, $filename, 'A4', 'landscape', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);
+    }
+
+    /**
+     * Debug: Tampilkan data yang ada di tabel izin untuk memeriksa masalah
+     */
+    public function debug()
+    {
+        $db = \Config\Database::connect();
+
+        // 1. Periksa jumlah data izin
+        $totalIzin = $db->table('izin')->countAllResults();
+
+        // 2. Ambil semua data izin
+        $izinData = $db->table('izin')->get()->getResultArray();
+
+        // 3. Periksa struktur tabel
+        $tableInfo = $db->getFieldData('izin');
+        $columns = [];
+        foreach ($tableInfo as $field) {
+            $columns[] = [
+                'name' => $field->name,
+                'type' => $field->type,
+                'max_length' => $field->max_length ?? 'NULL',
+                'primary_key' => $field->primary_key ? 'YES' : 'NO'
+            ];
+        }
+
+        $data = [
+            'total_records' => $totalIzin,
+            'columns' => $columns,
+            'data' => array_slice($izinData, 0, 10) // Ambil 10 data pertama saja
+        ];
+
+        // Tampilkan data dalam format JSON
+        return $this->response->setJSON($data);
+    }
+
+    /**
+     * Menampilkan semua data izin tanpa filter (untuk debugging)
+     */
+    public function debug_all_data()
+    {
+        $db = \Config\Database::connect();
+        $izinList = $db->table('izin')->get()->getResultArray();
+
+        $data = [
+            'title' => 'Semua Data Izin',
+            'izin' => $izinList,
+            'count' => count($izinList)
+        ];
+
+        // Tampilkan semua data dalam JSON format
+        return $this->response->setJSON($data);
+    }
+
+    /**
+     * Menambahkan data izin contoh (untuk debugging)
+     */
+    public function add_sample_data()
+    {
+        // Ambil ID pegawai yang sudah ada
+        $db = \Config\Database::connect();
+        $pegawaiIds = $db->table('pegawai')->select('idpegawai')->get()->getResultArray();
+
+        // Jika tidak ada pegawai, kembalikan pesan error
+        if (empty($pegawaiIds)) {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Tidak ada data pegawai yang tersedia.'
+            ]);
+        }
+
+        // Set zona waktu
+        date_default_timezone_set('Asia/Jakarta');
+
+        // Data izin contoh
+        $data = [
+            [
+                'idizin' => 'IZN' . date('Ymd') . '001',
+                'pegawai_id' => $pegawaiIds[0]['idpegawai'],
+                'tanggalmulaiizin' => date('Y-m-d', strtotime('+1 days')),
+                'tanggalselesaiizin' => date('Y-m-d', strtotime('+2 days')),
+                'selected_dates' => json_encode([
+                    date('Y-m-d', strtotime('+1 days')),
+                    date('Y-m-d', strtotime('+2 days'))
+                ]),
+                'jenisizin' => 'Cuti',
+                'alasan' => 'Keperluan keluarga',
+                'lampiran' => null,
+                'statusizin' => 0, // 0 = menunggu
+                'keterangan_admin' => null,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]
+        ];
+
+        // Coba simpan data
+        try {
+            $this->izinModel->insertBatch($data);
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => 'Data izin contoh berhasil ditambahkan.'
+            ]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Gagal menambahkan data: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Menampilkan struktur tabel dan data izin (untuk debugging)
+     */
+    public function debug_table()
+    {
+        $db = \Config\Database::connect();
+
+        // 1. Periksa jumlah data
+        $total = $db->table('izin')->countAllResults();
+
+        // 2. Ambil struktur tabel
+        $fields = $db->getFieldData('izin');
+        $structure = [];
+        foreach ($fields as $field) {
+            $structure[] = [
+                'name' => $field->name,
+                'type' => $field->type,
+                'max_length' => $field->max_length ?? 'NULL',
+                'primary_key' => $field->primary_key ? 'YES' : 'NO',
+                'nullable' => isset($field->nullable) && $field->nullable ? 'YES' : 'NO',
+                'default' => $field->default ?? 'NULL',
+            ];
+        }
+
+        // 3. Ambil semua data izin (maksimal 5)
+        $data = [];
+        if ($total > 0) {
+            $data = $db->table('izin')
+                ->select('izin.*, pegawai.namapegawai, jabatan.namajabatan')
+                ->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left')
+                ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left')
+                ->limit(5)
+                ->get()
+                ->getResultArray();
+        }
+
+        // 4. Cek data terkait
+        $pegawai = $db->table('pegawai')->countAllResults();
+        $jabatan = $db->table('jabatan')->countAllResults();
+
+        // 5. Cek raw query terakhir
+        $lastQuery = $db->getLastQuery();
+
+        $result = [
+            'total_izin' => $total,
+            'table_structure' => $structure,
+            'data_sample' => $data,
+            'related_data' => [
+                'pegawai' => $pegawai,
+                'jabatan' => $jabatan
+            ],
+            'last_query' => (string) $lastQuery,
+            'database_details' => [
+                'hostname' => $db->hostname,
+                'database' => $db->database,
+                'driver' => $db->DBDriver
+            ]
+        ];
+
+        return $this->response->setJSON($result);
     }
 }

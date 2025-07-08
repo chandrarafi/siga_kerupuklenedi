@@ -30,45 +30,51 @@
 
         .header-table td {
             border: none;
-            padding: 5px;
-            vertical-align: top;
+            vertical-align: middle;
+            padding: 0;
         }
 
         .logo-cell {
-            width: 15%;
-            text-align: center;
+            width: 120px;
+            text-align: left;
         }
 
-        .title-cell {
-            width: 70%;
+        .text-cell {
             text-align: center;
-        }
-
-        .info-cell {
-            width: 15%;
-            text-align: right;
-            font-size: 10px;
         }
 
         .logo-img {
-            max-width: 80px;
-            max-height: 80px;
+            width: 100px;
+            height: auto;
         }
 
-        h1 {
-            font-size: 18px;
+        .header h1 {
             margin: 0;
-            padding: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a3c6e;
+            text-align: center;
         }
 
-        h2 {
+        .header p {
+            margin: 5px 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .header h2 {
+            margin: 15px 0 5px 0;
+            color: #1a3c6e;
             font-size: 16px;
-            margin: 5px 0;
-            padding: 0;
+            text-align: center;
         }
 
-        p {
-            margin: 5px 0;
+        .info {
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            margin-bottom: 5px;
         }
 
         table {
@@ -77,90 +83,42 @@
             margin-bottom: 20px;
         }
 
-        th,
-        td {
+        table.data-table,
+        .data-table th,
+        .data-table td {
             border: 1px solid #ddd;
-            padding: 8px;
-            font-size: 11px;
         }
 
-        th {
-            background-color: #1a3c6e;
-            color: white;
-            font-weight: bold;
+        th,
+        td {
+            padding: 8px;
             text-align: center;
         }
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
+        th {
+            background-color: #f5f8fc;
+            color: #1a3c6e;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .footer p {
+            margin: 5px 0;
         }
 
         .text-center {
             text-align: center;
         }
 
+        .text-left {
+            text-align: left;
+        }
+
         .text-right {
             text-align: right;
-        }
-
-        .status-approved {
-            color: green;
-            font-weight: bold;
-        }
-
-        .status-pending {
-            color: orange;
-            font-weight: bold;
-        }
-
-        .status-rejected {
-            color: red;
-            font-weight: bold;
-        }
-
-        .footer {
-            margin-top: 30px;
-            text-align: right;
-            font-size: 11px;
-        }
-
-        .filter-info {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            font-size: 11px;
-        }
-
-        .stats-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .stat-box {
-            width: 30%;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .stat-box.total {
-            background-color: #cfe2ff;
-        }
-
-        .stat-box.approved {
-            background-color: #d1e7dd;
-        }
-
-        .stat-box.pending {
-            background-color: #fff3cd;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 5px 0;
         }
     </style>
 </head>
@@ -174,76 +132,30 @@
                         <img src="<?= $logo ?>" alt="Logo" class="logo-img">
                     <?php endif; ?>
                 </td>
-                <td class="title-cell">
-                    <h1>LAPORAN PENGAJUAN IZIN</h1>
-                    <h2>PT. KERUPUK LENEDI</h2>
-                    <p>Jl. Raya Kerupuk No. 123, Padang, Sumatera Barat</p>
+                <td class="text-cell">
+                    <h1>SISTEM INFORMASI KERUPUK LEN EDI</h1>
+                    <p>Pauh Kambar, Kabupaten Padang Pariaman</p>
+                    <p>Telp: (0751) 123456 | Email: info@kerupuklenedi.com</p>
                 </td>
-                <td class="info-cell">
-                    <p>Tanggal Cetak: <?= date('d-m-Y') ?></p>
-                    <p>Waktu: <?= date('H:i:s') ?></p>
+                <td class="logo-cell">
+                    <!-- Sel kosong untuk menyeimbangkan tata letak -->
                 </td>
             </tr>
         </table>
+        <h2>Laporan Izin Periode <?= !empty($filters['start_date']) && !empty($filters['end_date']) ?
+                                        date('d-m-Y', strtotime($filters['start_date'])) . ' s/d ' . date('d-m-Y', strtotime($filters['end_date'])) :
+                                        date('F Y') ?></h2>
     </div>
 
-    <!-- Filter Info -->
-    <div class="filter-info">
-        <strong>Filter:</strong>
-        <?php
-        $filterText = [];
-
-        if (!empty($filters['tanggal_awal']) && !empty($filters['tanggal_akhir'])) {
-            $filterText[] = "Periode: " . date('d-m-Y', strtotime($filters['tanggal_awal'])) . " s/d " . date('d-m-Y', strtotime($filters['tanggal_akhir']));
-        }
-
-        if (!empty($filters['status'])) {
-            $statusText = '';
-            if ($filters['status'] == '0') $statusText = 'Menunggu';
-            elseif ($filters['status'] == '1') $statusText = 'Disetujui';
-            elseif ($filters['status'] == '2') $statusText = 'Ditolak';
-            $filterText[] = "Status: " . $statusText;
-        }
-
-        if (!empty($filters['pegawai_id'])) {
-            // Ambil nama pegawai
-            $db = \Config\Database::connect();
-            $pegawai = $db->table('pegawai')
-                ->where('idpegawai', $filters['pegawai_id'])
-                ->get()
-                ->getRowArray();
-            if ($pegawai) {
-                $filterText[] = "Pegawai: " . $pegawai['namapegawai'];
-            }
-        }
-
-        echo !empty($filterText) ? implode(' | ', $filterText) : "Semua Data";
-        ?>
-    </div>
-
-    <!-- Statistics -->
-    <div class="stats-container">
-        <div class="stat-box total">
-            <p>Total Pengajuan</p>
-            <div class="stat-value"><?= count($izin) ?></div>
+    <div class="info">
+        <div class="info-item">
+            <strong>Periode:</strong>
+            <?= !empty($filters['start_date']) && !empty($filters['end_date']) ?
+                date('d-m-Y', strtotime($filters['start_date'])) . ' s/d ' . date('d-m-Y', strtotime($filters['end_date'])) :
+                'Semua Periode' ?>
         </div>
-        <div class="stat-box approved">
-            <p>Disetujui</p>
-            <?php
-            $approved = array_filter($izin, function ($item) {
-                return $item['statusizin'] == 1;
-            });
-            ?>
-            <div class="stat-value"><?= count($approved) ?></div>
-        </div>
-        <div class="stat-box pending">
-            <p>Menunggu/Ditolak</p>
-            <?php
-            $pending = array_filter($izin, function ($item) {
-                return $item['statusizin'] != 1;
-            });
-            ?>
-            <div class="stat-value"><?= count($pending) ?></div>
+        <div class="info-item">
+            <strong>Tanggal Cetak:</strong> <?= date('d-m-Y') ?>
         </div>
     </div>
 
@@ -251,58 +163,61 @@
     <?php if (empty($izin)): ?>
         <p class="text-center">Tidak ada data izin yang ditemukan dengan filter yang dipilih.</p>
     <?php else: ?>
-        <table>
+        <table class="data-table">
             <thead>
                 <tr>
-                    <th class="text-center">No</th>
-                    <th>Kode Izin</th>
+                    <th>No</th>
                     <th>Nama Pegawai</th>
-                    <th>NIK</th>
-                    <th>Jabatan</th>
-                    <th>Jenis Izin</th>
+                    <th>Nama Jabatan</th>
                     <th>Tanggal Mulai</th>
                     <th>Tanggal Selesai</th>
-                    <th>Lama Izin</th>
-                    <th class="text-center">Status</th>
+                    <th>Jenis Izin</th>
+                    <th>Alasan</th>
                 </tr>
             </thead>
             <tbody>
                 <?php $no = 1; ?>
-                <?php foreach ($izin as $item): ?>
-                    <tr>
-                        <td class="text-center"><?= $no++ ?></td>
-                        <td><?= $item['idizin'] ?></td>
-                        <td><?= $item['namapegawai'] ?></td>
-                        <td><?= $item['nik'] ?></td>
-                        <td><?= $item['namajabatan'] ?? '-' ?></td>
-                        <td><?= $item['jenisizin'] ?></td>
-                        <td><?= date('d-m-Y', strtotime($item['tanggalmulaiizin'])) ?></td>
-                        <td><?= date('d-m-Y', strtotime($item['tanggalselesaiizin'])) ?></td>
-                        <td>
-                            <?php
+                <?php
+                $totalHariIzin = 0;
+                foreach ($izin as $item):
+                    // Hitung lama izin
+                    $lamaIzin = 0;
+                    if (isset($item['tanggalmulaiizin']) && isset($item['tanggalselesaiizin'])) {
+                        try {
                             $start = new DateTime($item['tanggalmulaiizin']);
                             $end = new DateTime($item['tanggalselesaiizin']);
                             $interval = $start->diff($end);
-                            echo $interval->days + 1 . ' hari';
-                            ?>
-                        </td>
-                        <td class="text-center">
-                            <?php if ($item['statusizin'] == 0): ?>
-                                <span class="status-pending">Menunggu</span>
-                            <?php elseif ($item['statusizin'] == 1): ?>
-                                <span class="status-approved">Disetujui</span>
-                            <?php elseif ($item['statusizin'] == 2): ?>
-                                <span class="status-rejected">Ditolak</span>
-                            <?php endif; ?>
-                        </td>
+                            $lamaIzin = $interval->days + 1;
+                            $totalHariIzin += $lamaIzin;
+                        } catch (Exception $e) {
+                            $lamaIzin = 0;
+                        }
+                    }
+                ?>
+                    <tr>
+                        <td><?= $no++ ?></td>
+                        <td class="text-left"><?= $item['namapegawai'] ?? '-' ?></td>
+                        <td class="text-left"><?= $item['namajabatan'] ?? '-' ?></td>
+                        <td><?= isset($item['tanggalmulaiizin']) ? date('d/m/Y', strtotime($item['tanggalmulaiizin'])) : '-' ?></td>
+                        <td><?= isset($item['tanggalselesaiizin']) ? date('d/m/Y', strtotime($item['tanggalselesaiizin'])) : '-' ?></td>
+                        <td class="text-left"><?= $item['jenisizin'] ?? '-' ?></td>
+                        <td class="text-left"><?= $item['alasan'] ?? '-' ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-right">Total Hari Izin</th>
+                    <th colspan="2"><?= $totalHariIzin ?> hari</th>
+                </tr>
+            </tfoot>
         </table>
     <?php endif; ?>
 
     <div class="footer">
-        <p>Dicetak pada: <?= date('d-m-Y H:i:s') ?></p>
+        <p>Padang, <?= date('d') . ' ' . date('F Y') ?></p>
+        <br><br><br><br>
+        <p><strong>Pimpinan</strong></p>
     </div>
 </body>
 

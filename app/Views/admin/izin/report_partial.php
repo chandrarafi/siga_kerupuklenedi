@@ -3,7 +3,7 @@
         <h5 class="mb-0">Data Izin</h5>
     </div>
     <div class="card-body">
-        <?php if (!empty($filters['pegawai_id']) || !empty($filters['status']) || !empty($filters['tanggal_awal']) || !empty($filters['tanggal_akhir'])): ?>
+        <?php if (!empty($filters['pegawai_id']) || !empty($filters['status']) || !empty($filters['start_date']) || !empty($filters['end_date'])): ?>
             <div class="mb-3">
                 <h6>Filter yang digunakan:</h6>
                 <div class="d-flex flex-wrap gap-2">
@@ -30,100 +30,84 @@
                         </span>
                     <?php endif; ?>
 
-                    <?php if (!empty($filters['tanggal_awal'])): ?>
-                        <span class="badge bg-info">Dari: <?= date('d-m-Y', strtotime($filters['tanggal_awal'])) ?></span>
+                    <?php if (!empty($filters['start_date'])): ?>
+                        <span class="badge bg-info">Dari: <?= date('d-m-Y', strtotime($filters['start_date'])) ?></span>
                     <?php endif; ?>
 
-                    <?php if (!empty($filters['tanggal_akhir'])): ?>
-                        <span class="badge bg-info">Sampai: <?= date('d-m-Y', strtotime($filters['tanggal_akhir'])) ?></span>
+                    <?php if (!empty($filters['end_date'])): ?>
+                        <span class="badge bg-info">Sampai: <?= date('d-m-Y', strtotime($filters['end_date'])) ?></span>
                     <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
 
-        <?php if (empty($izin)): ?>
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Tidak ada data izin yang ditemukan dengan filter yang dipilih.
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Pegawai</th>
+                        <th>Nama Jabatan</th>
+                        <th>Tanggal Mulai</th>
+                        <th>Tanggal Selesai</th>
+                        <th>Jenis Izin</th>
+                        <th>Alasan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($izin)): ?>
                         <tr>
-                            <th class="text-center">No</th>
-                            <th>Kode Izin</th>
-                            <th>Nama Pegawai</th>
-                            <th>NIK</th>
-                            <th>Jabatan</th>
-                            <th>Jenis Izin</th>
-                            <th>Tanggal Mulai</th>
-                            <th>Tanggal Selesai</th>
-                            <th>Lama Izin</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center">Aksi</th>
+                            <td colspan="7" class="text-center">Tidak ada data izin yang ditemukan dengan filter yang dipilih.</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    <?php else: ?>
                         <?php $no = 1; ?>
-                        <?php foreach ($izin as $item): ?>
-                            <tr>
-                                <td class="text-center"><?= $no++ ?></td>
-                                <td><?= $item['idizin'] ?></td>
-                                <td><?= $item['namapegawai'] ?></td>
-                                <td><?= $item['nik'] ?></td>
-                                <td><?= $item['namajabatan'] ?? '-' ?></td>
-                                <td><?= $item['jenisizin'] ?></td>
-                                <td><?= date('d-m-Y', strtotime($item['tanggalmulaiizin'])) ?></td>
-                                <td><?= date('d-m-Y', strtotime($item['tanggalselesaiizin'])) ?></td>
-                                <td>
-                                    <?php
+                        <?php
+                        $totalHariIzin = 0;
+                        foreach ($izin as $item):
+                            // Hitung lama izin
+                            $lamaIzin = 0;
+                            if (isset($item['tanggalmulaiizin']) && isset($item['tanggalselesaiizin'])) {
+                                try {
                                     $start = new DateTime($item['tanggalmulaiizin']);
                                     $end = new DateTime($item['tanggalselesaiizin']);
                                     $interval = $start->diff($end);
-                                    echo $interval->days + 1 . ' hari';
-                                    ?>
-                                </td>
-                                <td class="text-center">
-                                    <?php if ($item['statusizin'] == 0): ?>
-                                        <span class="badge bg-warning">Menunggu</span>
-                                    <?php elseif ($item['statusizin'] == 1): ?>
-                                        <span class="badge bg-success">Disetujui</span>
-                                    <?php elseif ($item['statusizin'] == 2): ?>
-                                        <span class="badge bg-danger">Ditolak</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center">
-                                    <a href="<?= base_url('admin/izin/show/' . $item['idizin']) ?>" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
+                                    $lamaIzin = $interval->days + 1;
+                                    $totalHariIzin += $lamaIzin;
+                                } catch (Exception $e) {
+                                    $lamaIzin = 0;
+                                }
+                            }
+                        ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= $item['namapegawai'] ?? '-' ?></td>
+                                <td><?= $item['namajabatan'] ?? '-' ?></td>
+                                <td><?= isset($item['tanggalmulaiizin']) ? date('d/m/Y', strtotime($item['tanggalmulaiizin'])) : '-' ?></td>
+                                <td><?= isset($item['tanggalselesaiizin']) ? date('d/m/Y', strtotime($item['tanggalselesaiizin'])) : '-' ?></td>
+                                <td><?= $item['jenisizin'] ?? '-' ?></td>
+                                <td><?= $item['alasan'] ?? '-' ?></td>
                             </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
+                    <?php endif; ?>
+                </tbody>
+                <?php if (!empty($izin)): ?>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5" class="text-end">Total Hari Izin</th>
+                            <th colspan="2"><?= $totalHariIzin ?> hari</th>
+                        </tr>
+                    </tfoot>
+                <?php endif; ?>
+            </table>
+        </div>
+
+        <div class="mt-3">
+            <p>
+                <strong>Jumlah Data:</strong> <?= isset($total_izin) ? $total_izin : count($izin) ?> pengajuan
+                <?php if (!empty($filters['start_date']) && !empty($filters['end_date'])): ?>
+                    | <strong>Periode:</strong> <?= date('d-m-Y', strtotime($filters['start_date'])) ?> s/d <?= date('d-m-Y', strtotime($filters['end_date'])) ?>
+                <?php endif; ?>
+            </p>
+        </div>
     </div>
 </div>
-
-<script>
-    $(document).ready(function() {
-        $('#dataTable').DataTable({
-            responsive: true,
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ data per halaman",
-                zeroRecords: "Tidak ada data yang ditemukan",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                infoEmpty: "Tidak ada data yang tersedia",
-                infoFiltered: "(difilter dari _MAX_ total data)",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Selanjutnya",
-                    previous: "Sebelumnya"
-                }
-            }
-        });
-    });
-</script>

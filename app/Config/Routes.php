@@ -132,6 +132,21 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->get('getJabatanByBagian', 'Pegawai::getJabatanByBagian');
         $routes->get('report', 'Pegawai::report');
     });
+
+    // Admin - Izin
+    $routes->get('admin/izin', 'Admin\Izin::index', ['filter' => 'role:admin']);
+    $routes->get('admin/izin/show/(:num)', 'Admin\Izin::show/$1', ['filter' => 'role:admin']);
+    $routes->get('admin/izin/show/(:any)', 'Admin\Izin::show/$1', ['filter' => 'role:admin']);
+    $routes->get('admin/izin/report', 'Admin\Izin::report', ['filter' => 'role:admin']);
+    $routes->get('admin/izin/report_partial', 'Admin\Izin::report_partial', ['filter' => 'role:admin']);
+    $routes->get('admin/izin/generatePdf', 'Admin\Izin::generatePdf', ['filter' => 'role:admin']);
+    $routes->get('admin/izin/debug_all_data', 'Admin\Izin::debug_all_data'); // Route debugging tanpa filter
+    $routes->get('admin/izin/add_sample_data', 'Admin\Izin::add_sample_data'); // Route untuk menambah data contoh tanpa filter
+    $routes->get('admin/izin/debug_table', 'Admin\Izin::debug_table'); // Route untuk memeriksa struktur tabel
+    $routes->post('admin/izin/approve/(:num)', 'Admin\Izin::approve/$1', ['filter' => 'role:admin']);
+    $routes->post('admin/izin/approve/(:any)', 'Admin\Izin::approve/$1', ['filter' => 'role:admin']);
+    $routes->post('admin/izin/reject/(:num)', 'Admin\Izin::reject/$1', ['filter' => 'role:admin']);
+    $routes->post('admin/izin/reject/(:any)', 'Admin\Izin::reject/$1', ['filter' => 'role:admin']);
 });
 
 // Bagian API Routes

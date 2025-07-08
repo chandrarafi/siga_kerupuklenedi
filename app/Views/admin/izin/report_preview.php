@@ -16,11 +16,11 @@
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">Tanggal Mulai</label>
-                            <input type="text" class="form-control datepicker" name="tanggal_awal" id="tanggal_awal" value="<?= $filter['start_date'] ?>">
+                            <input type="text" class="form-control datepicker" name="start_date" id="start_date" value="<?= $filter['start_date'] ?>">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Tanggal Selesai</label>
-                            <input type="text" class="form-control datepicker" name="tanggal_akhir" id="tanggal_akhir" value="<?= $filter['end_date'] ?>">
+                            <input type="text" class="form-control datepicker" name="end_date" id="end_date" value="<?= $filter['end_date'] ?>">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Status</label>
@@ -43,7 +43,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="mt-3">
+                    <div class="mt-3 text-end">
                         <button type="button" class="btn btn-primary" id="btn-filter">
                             <i class="fas fa-filter"></i> Filter
                         </button>
@@ -60,8 +60,21 @@
     </div>
 </div>
 
-<div class="mt-4" id="report-container">
-    <!-- Report content will be loaded here via AJAX -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow" id="reportCard">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Data Izin</h5>
+            </div>
+            <div class="card-body" id="reportContent">
+                <!-- Konten laporan akan diisi melalui AJAX -->
+                <div class="text-center p-5">
+                    <i class="fas fa-file-alt fs-1"></i>
+                    <p class="mt-2">Silakan gunakan filter di atas untuk menampilkan data izin</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?= $this->endSection() ?>
@@ -77,8 +90,33 @@
             defaultDate: "today"
         });
 
-        // Load initial report
-        loadReport();
+        // Function to load report via AJAX
+        function loadReport() {
+            const startDate = $("#start_date").val();
+            const endDate = $("#end_date").val();
+            const status = $("#status").val();
+            const pegawaiId = $("#pegawai_id").val();
+
+            $.ajax({
+                url: '<?= base_url('admin/izin/report_partial') ?>',
+                type: 'GET',
+                data: {
+                    start_date: startDate,
+                    end_date: endDate,
+                    status: status,
+                    pegawai_id: pegawaiId
+                },
+                beforeSend: function() {
+                    $("#reportContent").html('<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Memuat data...</p></div>');
+                },
+                success: function(response) {
+                    $("#reportCard").replaceWith(response);
+                },
+                error: function(xhr, status, error) {
+                    $("#reportContent").html(`<div class="alert alert-danger">Terjadi kesalahan: ${error}</div>`);
+                }
+            });
+        }
 
         // Filter button click
         $("#btn-filter").click(function() {
@@ -87,8 +125,8 @@
 
         // Reset button click
         $("#btn-reset").click(function() {
-            $("#tanggal_awal").val('<?= date('Y-m-01') ?>');
-            $("#tanggal_akhir").val('<?= date('Y-m-d') ?>');
+            $("#start_date").val('<?= date('Y-m-01') ?>');
+            $("#end_date").val('<?= date('Y-m-d') ?>');
             $("#status").val('');
             $("#pegawai_id").val('');
             loadReport();
@@ -96,42 +134,30 @@
 
         // PDF button click
         $("#btn-pdf").click(function() {
-            const tanggalAwal = $("#tanggal_awal").val();
-            const tanggalAkhir = $("#tanggal_akhir").val();
+            const startDate = $("#start_date").val();
+            const endDate = $("#end_date").val();
             const status = $("#status").val();
             const pegawaiId = $("#pegawai_id").val();
 
-            const url = `<?= base_url('admin/izin/generatePdf') ?>?start_date=${tanggalAwal}&end_date=${tanggalAkhir}&status=${status}&pegawai_id=${pegawaiId}`;
+            let url = '<?= site_url('admin/izin/generatePdf') ?>';
+            let params = [];
+
+            if (startDate) params.push(`start_date=${startDate}`);
+            if (endDate) params.push(`end_date=${endDate}`);
+            if (status) params.push(`status=${status}`);
+            if (pegawaiId) params.push(`pegawai_id=${pegawaiId}`);
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+
             window.open(url, '_blank');
         });
 
-        // Function to load report via AJAX
-        function loadReport() {
-            const tanggalAwal = $("#tanggal_awal").val();
-            const tanggalAkhir = $("#tanggal_akhir").val();
-            const status = $("#status").val();
-            const pegawaiId = $("#pegawai_id").val();
-
-            $.ajax({
-                url: '<?= base_url('admin/izin/report_partial') ?>',
-                type: 'GET',
-                data: {
-                    start_date: tanggalAwal,
-                    end_date: tanggalAkhir,
-                    status: status,
-                    pegawai_id: pegawaiId
-                },
-                beforeSend: function() {
-                    $("#report-container").html('<div class="text-center my-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Loading...</p></div>');
-                },
-                success: function(response) {
-                    $("#report-container").html(response);
-                },
-                error: function(xhr, status, error) {
-                    $("#report-container").html(`<div class="alert alert-danger">Terjadi kesalahan: ${error}</div>`);
-                }
-            });
-        }
+        // Load initial report if filters are set
+        <?php if (!empty($filter['start_date']) || !empty($filter['end_date']) || !empty($filter['status']) || !empty($filter['pegawai_id'])): ?>
+            loadReport();
+        <?php endif; ?>
     });
 </script>
 <?= $this->endSection() ?>
