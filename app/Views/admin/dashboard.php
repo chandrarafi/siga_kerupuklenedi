@@ -9,7 +9,7 @@
                 <div class="d-md-flex align-items-center justify-content-between">
                     <div>
                         <h4 class="mb-1">Selamat datang kembali, Administrator!</h4>
-                        <p class="text-secondary mb-md-0">Berikut adalah ringkasan statistik sistem Anda hari ini</p>
+                        <p class="text-secondary mb-md-0">Berikut adalah ringkasan statistik sistem penggajian dan absensi hari ini</p>
                     </div>
                     <div class="d-flex mt-3 mt-md-0">
                         <button class="btn btn-sm btn-primary px-3">
@@ -29,15 +29,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs text-uppercase mb-1 text-primary fw-bold">Total Pengguna</div>
+                        <div class="text-xs text-uppercase mb-1 text-primary fw-bold">Total Karyawan</div>
                         <div class="d-flex align-items-center">
-                            <div class="h3 mb-0 fw-bold" id="totalUsers">0</div>
+                            <div class="h3 mb-0 fw-bold" id="totalKaryawan">0</div>
                             <div class="ms-2 badge bg-success-soft text-success px-2 rounded-pill">
-                                <i class="bi bi-arrow-up me-1"></i>12%
+                                <i class="bi bi-arrow-up me-1"></i>5%
                             </div>
                         </div>
                         <div class="mt-2 text-secondary small">
-                            <span class="fw-bold">12%</span> meningkat dibanding bulan lalu
+                            <span class="fw-bold">5%</span> meningkat dibanding bulan lalu
                         </div>
                     </div>
                     <div class="icon">
@@ -57,19 +57,19 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs text-uppercase mb-1 text-success fw-bold">Pengguna Aktif</div>
+                        <div class="text-xs text-uppercase mb-1 text-success fw-bold">Kehadiran Hari Ini</div>
                         <div class="d-flex align-items-center">
-                            <div class="h3 mb-0 fw-bold" id="activeUsers">0</div>
+                            <div class="h3 mb-0 fw-bold" id="kehadiranHariIni">0</div>
                             <div class="ms-2 badge bg-success-soft text-success px-2 rounded-pill">
-                                <i class="bi bi-arrow-up me-1"></i>8%
+                                <i class="bi bi-arrow-up me-1"></i>3%
                             </div>
                         </div>
                         <div class="mt-2 text-secondary small">
-                            <span class="fw-bold">8%</span> meningkat dibanding bulan lalu
+                            <span class="fw-bold">3%</span> meningkat dibanding kemarin
                         </div>
                     </div>
                     <div class="icon">
-                        <i class="bi bi-person-check-fill"></i>
+                        <i class="bi bi-calendar2-check-fill"></i>
                     </div>
                 </div>
                 <div class="mt-3">
@@ -85,19 +85,19 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs text-uppercase mb-1 text-warning fw-bold">Admin</div>
+                        <div class="text-xs text-uppercase mb-1 text-warning fw-bold">Total Lembur</div>
                         <div class="d-flex align-items-center">
-                            <div class="h3 mb-0 fw-bold" id="adminUsers">0</div>
-                            <div class="ms-2 badge bg-secondary-soft text-secondary px-2 rounded-pill">
-                                <i class="bi bi-dash me-1"></i>0%
+                            <div class="h3 mb-0 fw-bold" id="totalLembur">0</div>
+                            <div class="ms-2 badge bg-warning-soft text-warning px-2 rounded-pill">
+                                <i class="bi bi-arrow-up me-1"></i>7%
                             </div>
                         </div>
                         <div class="mt-2 text-secondary small">
-                            Tetap stabil dibanding bulan lalu
+                            <span class="fw-bold">7%</span> meningkat dibanding bulan lalu
                         </div>
                     </div>
                     <div class="icon">
-                        <i class="bi bi-shield-lock-fill"></i>
+                        <i class="bi bi-clock-history"></i>
                     </div>
                 </div>
                 <div class="mt-3">
@@ -109,28 +109,28 @@
         </div>
     </div>
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card danger h-100">
+        <div class="card stat-card info h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-xs text-uppercase mb-1 text-danger fw-bold">Pengguna Tidak Aktif</div>
+                        <div class="text-xs text-uppercase mb-1 text-info fw-bold">Total Pengeluaran Gaji</div>
                         <div class="d-flex align-items-center">
-                            <div class="h3 mb-0 fw-bold" id="inactiveUsers">0</div>
-                            <div class="ms-2 badge bg-danger-soft text-danger px-2 rounded-pill">
-                                <i class="bi bi-arrow-down me-1"></i>5%
+                            <div class="h3 mb-0 fw-bold" id="totalPengeluaran">Rp 0</div>
+                            <div class="ms-2 badge bg-info-soft text-info px-2 rounded-pill">
+                                <i class="bi bi-arrow-up me-1"></i>4%
                             </div>
                         </div>
                         <div class="mt-2 text-secondary small">
-                            <span class="fw-bold">5%</span> menurun dari bulan lalu
+                            <span class="fw-bold">4%</span> meningkat dibanding bulan lalu
                         </div>
                     </div>
                     <div class="icon">
-                        <i class="bi bi-person-x-fill"></i>
+                        <i class="bi bi-cash-stack"></i>
                     </div>
                 </div>
                 <div class="mt-3">
                     <div class="progress">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                 </div>
             </div>
@@ -144,7 +144,7 @@
     <div class="col-xl-8 col-lg-7 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">Statistik Pengguna</h6>
+                <h6 class="mb-0 fw-bold">Statistik Kehadiran & Gaji</h6>
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle px-3" type="button" id="chartRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         30 Hari Terakhir
@@ -161,28 +161,28 @@
                 </div>
             </div>
             <div class="card-body">
-                <div id="userStatsChart" style="height: 320px;"></div>
+                <div id="attendanceChart" style="height: 320px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Users -->
+    <!-- Recent Employees -->
     <div class="col-xl-4 col-lg-5 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">Pengguna Terbaru</h6>
-                <a href="<?= site_url('admin/users') ?>" class="btn btn-sm btn-primary">
+                <h6 class="mb-0 fw-bold">Karyawan Terbaru</h6>
+                <a href="<?= site_url('admin/karyawan') ?>" class="btn btn-sm btn-primary">
                     <i class="bi bi-people me-1"></i> Lihat Semua
                 </a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="recentUsers">
+                    <table class="table table-hover mb-0" id="recentEmployees">
                         <thead>
                             <tr>
-                                <th>Username</th>
+                                <th>NIP</th>
                                 <th>Nama</th>
-                                <th>Role</th>
+                                <th>Jabatan</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -557,7 +557,7 @@
         }
 
         /* Chart adjustments */
-        #userStatsChart {
+        #attendanceChart {
             height: 250px !important;
         }
 
@@ -584,7 +584,7 @@
             success: function(response) {
                 if (response.data) {
                     // Count total users
-                    $('#totalUsers').text(response.recordsTotal);
+                    $('#totalKaryawan').text(response.recordsTotal);
 
                     // Count active users
                     let activeUsers = 0;
@@ -604,15 +604,15 @@
                         }
                     });
 
-                    $('#activeUsers').text(activeUsers);
-                    $('#adminUsers').text(adminUsers);
-                    $('#inactiveUsers').text(inactiveUsers);
+                    $('#kehadiranHariIni').text(activeUsers);
+                    $('#totalLembur').text(adminUsers);
+                    $('#totalPengeluaran').text(inactiveUsers);
                 }
             }
         });
 
         // Initialize DataTable for recent users
-        $('#recentUsers').DataTable({
+        $('#recentEmployees').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
@@ -620,7 +620,7 @@
                 type: 'GET'
             },
             columns: [{
-                    data: 'username'
+                    data: 'nip'
                 },
                 {
                     data: 'name'
@@ -678,13 +678,13 @@
         // Initialize User Stats Chart
         var options = {
             series: [{
-                name: 'Total Pengguna',
+                name: 'Total Karyawan',
                 data: [31, 40, 28, 51, 42, 109, 100, 120, 110, 125, 140, 150]
             }, {
-                name: 'Pengguna Aktif',
+                name: 'Kehadiran Hari Ini',
                 data: [25, 32, 25, 40, 39, 90, 85, 100, 95, 110, 120, 130]
             }, {
-                name: 'Admin',
+                name: 'Total Lembur',
                 data: [5, 5, 5, 6, 6, 8, 8, 8, 9, 9, 10, 10]
             }],
             chart: {
@@ -728,7 +728,7 @@
             tooltip: {
                 y: {
                     formatter: function(value) {
-                        return value + " pengguna";
+                        return value + " karyawan";
                     }
                 },
                 theme: 'dark',
@@ -789,7 +789,7 @@
             }]
         };
 
-        var chart = new ApexCharts(document.querySelector("#userStatsChart"), options);
+        var chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
         chart.render();
 
         // Handle task checkbox behavior

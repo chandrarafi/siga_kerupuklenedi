@@ -8,6 +8,32 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
+        // Cek apakah user admin sudah ada
+        $existingAdmin = $this->db->table('users')->where('username', 'admin')->get()->getRowArray();
+
+        if ($existingAdmin) {
+            echo "User admin sudah ada, melewati proses insert data.\n";
+
+            // Output info
+            echo "----------------------------------------\n";
+            echo "Daftar akun yang tersedia:\n";
+            echo "1. Admin\n";
+            echo "   Username: admin\n";
+            echo "   Password: admin123\n";
+            echo "2. Manager\n";
+            echo "   Username: manager\n";
+            echo "   Password: manager123\n";
+            echo "3. User\n";
+            echo "   Username: user\n";
+            echo "   Password: user123\n";
+            echo "4. Inactive User\n";
+            echo "   Username: inactive\n";
+            echo "   Password: inactive123\n";
+            echo "----------------------------------------\n";
+
+            return;
+        }
+
         $data = [
             [
                 'username' => 'admin',

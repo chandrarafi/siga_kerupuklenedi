@@ -79,14 +79,11 @@ class Autoload extends AutoloadConfig
 
     /**
      * -------------------------------------------------------------------
-     * Helpers
+     * Auto-load Helpers
      * -------------------------------------------------------------------
      * Prototype:
-     *   $helpers = [
-     *       'form',
-     *   ];
      *
-     * @var list<string>
+     *     $helpers = ['url', 'file'];
      */
-    public $helpers = [];
+    public $helpers = ['url', 'form', 'terbilang'];
 }

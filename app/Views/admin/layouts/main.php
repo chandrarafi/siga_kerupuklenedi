@@ -1,10 +1,13 @@
+<?php
+$uri = service('uri');
+?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Admin Panel' ?> - CI4 Master</title>
+    <title><?= $title ?? 'Admin Panel' ?> - Sistem Penggajian & Absensi</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,19 +19,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Animate CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    <?= $this->renderSection('styles') ?>
+
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --primary-gradient-start: #3498db;
-            --primary-gradient-end: #2c3e50;
-            --secondary-color: #7f8c8d;
-            --success-color: #27ae60;
-            --info-color: #3498db;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
+            --primary-color: #1a3c6e;
+            --primary-gradient-start: #2c5ca2;
+            --primary-gradient-end: #1a3c6e;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
             --light-color: #f8f9fc;
-            --dark-color: #2c3e50;
+            --dark-color: #343a40;
             --border-radius: 0.5rem;
             --card-border-radius: 0.75rem;
             --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
@@ -79,6 +88,31 @@
             position: fixed;
             width: 280px;
             transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-menu {
+            height: calc(100vh - 6rem);
+            overflow-y: auto;
+            padding-bottom: 2rem;
+        }
+
+        .sidebar-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-menu::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .sidebar-menu::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .sidebar-brand {
@@ -114,24 +148,28 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
             padding-left: 1.5rem;
+            padding-bottom: 0.5rem;
         }
 
         .nav-item {
             position: relative;
             padding: 0 0.5rem;
+            margin-bottom: 0.1rem;
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
-            padding: 1rem;
+            padding: 0.7rem 1rem;
             border-radius: var(--border-radius);
-            margin: 0.2rem 0;
+            margin: 0.1rem 0;
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
         }
 
         .nav-link::before {
@@ -173,10 +211,20 @@
 
         .nav-link i {
             margin-right: 0.8rem;
-            font-size: 1.1rem;
-            width: 1.5rem;
+            font-size: 1rem;
+            width: 1.2rem;
             text-align: center;
             transition: all 0.3s;
+        }
+
+        .nav-link span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            margin-left: 0.5rem;
         }
 
         /* Main content */
@@ -407,37 +455,37 @@
 
         .btn-primary:hover {
             background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
-            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.4);
+            box-shadow: 0 5px 15px rgba(26, 60, 110, 0.4);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            background: linear-gradient(135deg, #34c759 0%, #28a745 100%);
             border: none;
         }
 
         .btn-success:hover {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+            background: linear-gradient(135deg, #34c759 0%, #28a745 100%);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
         }
 
         .btn-info {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: linear-gradient(135deg, #20b2d2 0%, #17a2b8 100%);
             border: none;
         }
 
         .btn-info:hover {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #20b2d2 0%, #17a2b8 100%);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            background: linear-gradient(135deg, #e04b59 0%, #dc3545 100%);
             border: none;
         }
 
         .btn-danger:hover {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+            background: linear-gradient(135deg, #e04b59 0%, #dc3545 100%);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
         }
 
         /* Progress bars */
@@ -486,6 +534,15 @@
             border-collapse: separate;
             border-spacing: 0;
             width: 100%;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 1rem 0;
+            background-color: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            color: var(--secondary-color);
+            font-size: 0.875rem;
         }
 
         .table th {
@@ -955,6 +1012,28 @@
                 font-size: 1rem;
             }
 
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .main-content::before {
+                left: 0;
+            }
+
+            .sidebar-menu {
+                height: calc(100vh - 5rem);
+            }
+
             .card-header {
                 padding: 1rem;
             }
@@ -1035,45 +1114,145 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="text-center">
-                <h3>CI4 ADMIN</h3>
-                <p class="small">Master Panel</p>
+                <h3>SIGA</h3>
+                <p class="small">Sistem Penggajian & Absensi</p>
             </div>
         </div>
         <hr class="sidebar-divider">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link <?= $title == 'Dashboard' ? 'active' : '' ?>" href="<?= site_url('admin') ?>">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= $title == 'User Management' ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">
-                    <i class="bi bi-people"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
+        <div class="sidebar-menu">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Dashboard' ? 'active' : '' ?>" href="<?= site_url('admin') ?>">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
 
-            <li class="nav-header mt-3">SETTINGS</li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="bi bi-gear"></i>
-                    <span>General Settings</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="bi bi-lock"></i>
-                    <span>Security</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="btn-logout">
-                    <i class="bi bi-box-arrow-left"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
+                <li class="nav-header mt-3">KEPEGAWAIAN</li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Data Bagian' ? 'active' : '' ?>" href="<?= site_url('admin/bagian') ?>">
+                        <i class="bi bi-diagram-3"></i>
+                        <span>Data Bagian</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan') ?>">
+                        <i class="bi bi-briefcase"></i>
+                        <span>Data Jabatan</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= site_url('admin/pegawai') ?>" class="nav-link <?= $uri->getSegment(2) == 'pegawai' ? 'active' : '' ?>">
+                        <i class="bi bi-people"></i>
+                        <span>Pegawai</span>
+                    </a>
+                </li>
+
+
+                <li class="nav-header mt-3">ABSENSI</li>
+                <li class="nav-item">
+                    <a href="<?= site_url('admin/absensi') ?>" class="nav-link <?= $uri->getSegment(2) == 'absensi' ? 'active' : '' ?>">
+                        <i class="bi bi-clipboard-check"></i>
+                        <span>Absensi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= site_url('admin/izin') ?>" class="nav-link <?= $uri->getSegment(2) == 'izin' ? 'active' : '' ?>">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Pengajuan Izin</span>
+                        <?php
+                        $izinModel = new \App\Models\IzinModel();
+                        $pendingCount = $izinModel->countPendingIzin();
+                        if ($pendingCount > 0) :
+                        ?>
+                            <span class="badge bg-danger rounded-pill"><?= $pendingCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur') ?>">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Data Lembur</span>
+                    </a>
+                </li>
+
+                <li class="nav-header mt-3">PENGGAJIAN</li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $uri->getSegment(2) == 'gaji' && !$uri->getSegment(3) ? 'active' : '' ?>" href="<?= site_url('admin/gaji') ?>">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Data Gaji</span>
+                    </a>
+                </li>
+
+
+                <li class="nav-header mt-3">LAPORAN</li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Laporan Pegawai' ? 'active' : '' ?>" href="<?= site_url('admin/pegawai/report') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Laporan Pegawai</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Laporan Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan/report') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Laporan Jabatan</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Laporan Izin' ? 'active' : '' ?>" href="<?= site_url('admin/izin/report') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Laporan Izin</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Laporan Data Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/absensi/report') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Laporan Absensi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Laporan Data Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur/report') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Laporan Lembur</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Laporan Data Gaji' ? 'active' : '' ?>" href="<?= site_url('admin/gaji/report') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Laporan Gaji</span>
+                    </a>
+                </li>
+
+                <li class="nav-header mt-3">PENGATURAN</li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'User Management' ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Manajemen User</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Lokasi Kantor' ? 'active' : '' ?>" href="<?= site_url('admin/settings/office-location') ?>">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>Lokasi Kantor</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $title == 'Jam Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/settings/absensi-settings') ?>">
+                        <i class="bi bi-clock"></i>
+                        <span>Jam Absensi</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" id="btn-logout">
+                        <i class="bi bi-box-arrow-left"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 
     <!-- Mobile Toggle Button -->
@@ -1090,7 +1269,7 @@
             </button>
             <h1><?= $title ?? 'Dashboard' ?></h1>
             <div class="topbar-divider"></div>
-            <div class="text-secondary small">Welcome, Administrator</div>
+            <div class="text-secondary small">Selamat Datang, Administrator</div>
             <div class="topbar-nav">
                 <div class="topbar-item">
                     <a href="#" class="nav-link" data-bs-toggle="tooltip" title="Notifications">
@@ -1110,7 +1289,7 @@
                     </a>
                 </div>
                 <div class="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=2c3e50&color=fff" alt="Admin">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=1a3c6e&color=fff" alt="Admin">
                     <div class="user-info">
                         <h6>Admin</h6>
                         <small>Administrator</small>
@@ -1123,21 +1302,156 @@
         <div class="container-fluid page-content animate__animated animate__fadeIn">
             <?= $this->renderSection('content') ?>
         </div>
+
+        <!-- Footer -->
+        <footer class="footer mt-4">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-0">&copy; <?= date('Y') ?> SIGA - Sistem Penggajian & Absensi</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="text-muted mb-0">Versi 1.0.0</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
-    <!-- Bootstrap 5 JS -->
+    <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- DataTables -->
+    <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <!-- ApexCharts for beautiful charts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
+        // Fungsi untuk membersihkan modal dan backdrop yang mungkin tertinggal
+        function cleanupModals() {
+            // Hapus semua backdrop yang mungkin tertinggal
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                backdrop.remove();
+            });
+
+            // Hapus kelas modal-open dari body
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            // Pastikan semua modal tersembunyi
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+            });
+        }
+
+        // Jalankan pembersihan saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            cleanupModals();
+        });
+
+        // Global Modal Helper
+        window.ModalHelper = {
+            modals: {},
+
+            // Initialize a modal
+            initModal: function(modalId) {
+                if (document.getElementById(modalId)) {
+                    try {
+                        // Hapus modal lama jika sudah ada
+                        if (this.modals[modalId]) {
+                            delete this.modals[modalId];
+                        }
+
+                        // Inisialisasi modal baru dengan Bootstrap native
+                        this.modals[modalId] = new bootstrap.Modal(document.getElementById(modalId), {
+                            backdrop: 'static',
+                            keyboard: false,
+                            focus: true
+                        });
+
+                        return this.modals[modalId];
+                    } catch (error) {
+                        console.error('Error initializing modal:', error);
+                        return null;
+                    }
+                }
+                return null;
+            },
+
+            // Show a modal
+            showModal: function(modalId) {
+                try {
+                    if (!this.modals[modalId]) {
+                        this.initModal(modalId);
+                    }
+
+                    if (this.modals[modalId]) {
+                        this.modals[modalId].show();
+                    }
+                } catch (error) {
+                    console.error('Error showing modal:', error);
+                }
+            },
+
+            // Hide a modal
+            hideModal: function(modalId) {
+                try {
+                    if (this.modals[modalId]) {
+                        this.modals[modalId].hide();
+
+                        // Tambahkan pembersihan setelah modal ditutup
+                        setTimeout(cleanupModals, 300);
+                    }
+                } catch (error) {
+                    console.error('Error hiding modal:', error);
+                    // Fallback jika gagal menutup modal
+                    cleanupModals();
+                }
+            },
+
+            // Close all modals
+            closeAllModals: function() {
+                try {
+                    document.querySelectorAll('.modal').forEach(modalEl => {
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    });
+
+                    // Tambahkan pembersihan setelah semua modal ditutup
+                    setTimeout(cleanupModals, 300);
+                } catch (error) {
+                    console.error('Error closing all modals:', error);
+                    // Fallback jika gagal menutup modal
+                    cleanupModals();
+                }
+            }
+        };
+
+        // Initialize all modals when DOM is ready
+        $(document).ready(function() {
+            // Close any open modals that might be stuck from previous page loads
+            ModalHelper.closeAllModals();
+
+            // Setup modal close buttons
+            $(document).on('click', '[data-bs-dismiss="modal"]', function() {
+                const modalId = $(this).closest('.modal').attr('id');
+                if (modalId) {
+                    ModalHelper.hideModal(modalId);
+                }
+            });
+        });
+
         // Initialize tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
@@ -1184,40 +1498,6 @@
 
     <?= $this->renderSection('scripts') ?>
 
-    <!-- Modal wrapper for handling modal backdrop correctly -->
-    <div id="modal-container"></div>
-    <script>
-        // Move all modals to the end of body to ensure they work correctly
-        $(document).ready(function() {
-            // Move all modals to modal container at the end of body
-            $('.modal').appendTo('#modal-container');
-
-            // Fix modal backdrop handling
-            $(document).on('show.bs.modal', '.modal', function() {
-                const $modal = $(this);
-                const modalZIndex = 1060;
-
-                $modal.css('z-index', modalZIndex);
-
-                // Make sure there's only one backdrop
-                if ($('.modal-backdrop').length === 0) {
-                    $('<div class="modal-backdrop show"></div>')
-                        .css('z-index', modalZIndex - 5)
-                        .appendTo('body');
-                }
-
-                $('body').addClass('modal-open');
-            });
-
-            $(document).on('hidden.bs.modal', '.modal', function() {
-                // Only remove backdrop and modal-open class if no modal is visible
-                if ($('.modal:visible').length === 0) {
-                    $('.modal-backdrop').remove();
-                    $('body').removeClass('modal-open');
-                }
-            });
-        });
-    </script>
     <script>
         $(document).ready(function() {
             $('#btn-logout').click(function() {
