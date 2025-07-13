@@ -158,9 +158,9 @@
             <?php endif; ?>
         <?php endif; ?>
 
-        <div class="info-item">
+        <!-- <div class="info-item">
             <strong>Tanggal Cetak:</strong> <?= date('d-m-Y') ?>
-        </div>
+        </div> -->
     </div>
 
     <table class="data-table">

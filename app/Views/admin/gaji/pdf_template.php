@@ -196,9 +196,9 @@
             </div>
         <?php endif; ?>
 
-        <div class="info-item">
+        <!-- <div class="info-item">
             <strong>Tanggal Cetak:</strong> <?= date('d-m-Y') ?>
-        </div>
+        </div> -->
     </div>
 
     <div class="table-container">
@@ -206,15 +206,15 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>NIK</th>
+                    <!-- <th>NIK</th> -->
                     <th>Nama Pegawai</th>
-                    <th>No. Slip</th>
+                    <th>Nama Jabatan</th>
                     <th>Tanggal</th>
                     <th>Total Absen</th>
                     <th>Total Lembur</th>
                     <th>Potongan</th>
                     <th>Gaji Bersih</th>
-                    <th>Status</th>
+                    <!-- <th>Status</th> -->
                 </tr>
             </thead>
             <tbody>
@@ -222,15 +222,15 @@
                 foreach ($gaji_list as $gaji) : ?>
                     <tr>
                         <td><?= $no++ ?></td>
-                        <td><?= $gaji['nik'] ?></td>
+                        <!-- <td><?= $gaji['nik'] ?></td> -->
                         <td><?= $gaji['namapegawai'] ?></td>
-                        <td><?= $gaji['noslip'] ?></td>
+                        <td><?= $gaji['namajabatan'] ?></td>
                         <td><?= date('d/m/Y', strtotime($gaji['tanggal'])) ?></td>
                         <td><?= $gaji['totalabsen'] ?> hari</td>
                         <td><?= $gaji['totallembur'] ?> jam</td>
                         <td>Rp <?= number_format($gaji['potongan'], 0, ',', '.') ?></td>
                         <td>Rp <?= number_format($gaji['gajibersih'], 0, ',', '.') ?></td>
-                        <td>
+                        <!-- <td>
                             <?php if ($gaji['status'] == 'pending') : ?>
                                 Pending
                             <?php elseif ($gaji['status'] == 'paid') : ?>
@@ -238,7 +238,7 @@
                             <?php elseif ($gaji['status'] == 'cancelled') : ?>
                                 Cancelled
                             <?php endif; ?>
-                        </td>
+                        </td> -->
                     </tr>
                 <?php endforeach; ?>
             </tbody>

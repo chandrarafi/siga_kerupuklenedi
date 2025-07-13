@@ -680,7 +680,7 @@ class Gaji extends BaseController
         $bulan_nama = $bulan_list[$bulan] ?? $bulan;
 
         $data = [
-            'title' => 'Laporan Gaji Periode ' . $bulan_nama . ' ' . $tahun,
+            'title' => 'Laporan Gaji ',
             'gaji_list' => $gaji_list,
             'filters' => [
                 'bulan' => $bulan,

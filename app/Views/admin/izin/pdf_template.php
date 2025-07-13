@@ -142,9 +142,7 @@
                 </td>
             </tr>
         </table>
-        <h2>Laporan Izin Periode <?= !empty($filters['start_date']) && !empty($filters['end_date']) ?
-                                        date('d-m-Y', strtotime($filters['start_date'])) . ' s/d ' . date('d-m-Y', strtotime($filters['end_date'])) :
-                                        date('F Y') ?></h2>
+        <h2>Laporan Data Izin</h2>
     </div>
 
     <div class="info">
@@ -154,9 +152,9 @@
                 date('d-m-Y', strtotime($filters['start_date'])) . ' s/d ' . date('d-m-Y', strtotime($filters['end_date'])) :
                 'Semua Periode' ?>
         </div>
-        <div class="info-item">
+        <!-- <div class="info-item">
             <strong>Tanggal Cetak:</strong> <?= date('d-m-Y') ?>
-        </div>
+        </div> -->
     </div>
 
     <!-- Table -->

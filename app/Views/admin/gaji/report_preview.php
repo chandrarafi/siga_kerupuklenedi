@@ -51,7 +51,7 @@
                                 ?>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3" hidden>
                             <label class="form-label">Status</label>
                             <select class="form-select" name="status" id="status">
                                 <option value="">Semua Status</option>

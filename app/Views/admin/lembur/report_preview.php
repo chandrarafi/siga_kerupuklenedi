@@ -14,7 +14,7 @@
             <div class="card-body">
                 <form id="form-filter">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-4" hidden>
                             <label class="form-label">Pegawai</label>
                             <select class="form-select" name="pegawai" id="pegawai">
                                 <option value="">Semua Pegawai</option>

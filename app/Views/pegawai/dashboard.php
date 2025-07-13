@@ -93,9 +93,15 @@
     <?php endif; ?>
 </div>
 
-<div id="location-status" class="mb-4 text-center p-3 rounded-lg bg-blue-50 text-blue-700 text-sm">
-    <i class="fas fa-location-dot mr-2"></i>
-    Mengambil lokasi Anda...
+<div class="flex flex-col sm:flex-row items-center gap-2 mb-4">
+    <div id="location-status" class="flex-1 text-center p-3 rounded-lg bg-blue-50 text-blue-700 text-sm">
+        <i class="fas fa-location-dot mr-2"></i>
+        Mengambil lokasi Anda...
+    </div>
+    <button id="refresh-location-btn" class="p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2">
+        <i class="fas fa-location-crosshairs"></i>
+        <span>Perbarui Lokasi</span>
+    </button>
 </div>
 
 <!-- Grid Statistik dan Info -->
@@ -545,6 +551,13 @@
         if (navigator.geolocation) {
             document.getElementById('location-status').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mendapatkan lokasi Anda...';
 
+            // Ubah tombol saat proses
+            const refreshBtn = document.getElementById('refresh-location-btn');
+            if (refreshBtn) {
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Memproses...</span>';
+            }
+
             navigator.geolocation.getCurrentPosition(
                 function(position) {
                     userPosition = [position.coords.latitude, position.coords.longitude];
@@ -574,10 +587,10 @@
                     const locationStatus = document.getElementById('location-status');
                     if (distance <= maxDistance) {
                         locationStatus.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Anda berada dalam jangkauan kantor (${distance.toFixed(2)} m)`;
-                        locationStatus.className = 'mb-4 text-center p-3 rounded-lg bg-green-50 text-green-700 text-sm';
+                        locationStatus.className = 'flex-1 text-center p-3 rounded-lg bg-green-50 text-green-700 text-sm';
                     } else {
                         locationStatus.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> Anda berada diluar jangkauan kantor (${distance.toFixed(2)} m)`;
-                        locationStatus.className = 'mb-4 text-center p-3 rounded-lg bg-red-50 text-red-700 text-sm';
+                        locationStatus.className = 'flex-1 text-center p-3 rounded-lg bg-red-50 text-red-700 text-sm';
                     }
 
                     // Set view peta untuk menampilkan kedua marker
@@ -586,11 +599,25 @@
                         padding: [30, 30],
                         maxZoom: 17
                     });
+
+                    // Reset tombol refresh
+                    const refreshBtn = document.getElementById('refresh-location-btn');
+                    if (refreshBtn) {
+                        refreshBtn.disabled = false;
+                        refreshBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i> <span>Perbarui Lokasi</span>';
+                    }
                 },
                 function(error) {
                     const locationStatus = document.getElementById('location-status');
                     locationStatus.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> ' + getLocationErrorMessage(error);
-                    locationStatus.className = 'mb-4 text-center p-3 rounded-lg bg-red-50 text-red-700 text-sm';
+                    locationStatus.className = 'flex-1 text-center p-3 rounded-lg bg-red-50 text-red-700 text-sm';
+
+                    // Reset tombol refresh
+                    const refreshBtn = document.getElementById('refresh-location-btn');
+                    if (refreshBtn) {
+                        refreshBtn.disabled = false;
+                        refreshBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i> <span>Perbarui Lokasi</span>';
+                    }
                 }, {
                     enableHighAccuracy: true,
                     timeout: 10000,
@@ -749,6 +776,15 @@
         const btnAbsenPulang = document.getElementById('btn-absen-pulang');
         if (btnAbsenPulang) {
             btnAbsenPulang.addEventListener('click', absenPulang);
+        }
+
+        // Refresh location button
+        const btnRefreshLocation = document.getElementById('refresh-location-btn');
+        if (btnRefreshLocation) {
+            btnRefreshLocation.addEventListener('click', function() {
+                showToast('Memperbarui lokasi...', 'info');
+                getLocation();
+            });
         }
 
         // Refresh location setiap 30 detik

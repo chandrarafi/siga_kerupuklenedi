@@ -347,13 +347,13 @@ class Izin extends BaseController
         if (!empty($tanggalAwal) && !empty($tanggalAkhir)) {
             // Mencari izin yang overlap dengan tanggal filter (tidak terlalu ketat)
             $builder->groupStart()
-                ->where('tanggalmulaiizin <=', $tanggalAkhir) // izin dimulai sebelum periode filter berakhir
-                ->where('tanggalselesaiizin >=', $tanggalAwal) // izin berakhir setelah periode filter dimulai
+                ->where('izin.created_at <=', $tanggalAkhir) // izin dimulai sebelum periode filter berakhir
+                ->where('izin.created_at >=', $tanggalAwal) // izin berakhir setelah periode filter dimulai
                 ->groupEnd();
         } elseif (!empty($tanggalAwal)) {
-            $builder->where('tanggalmulaiizin >=', $tanggalAwal);
+            $builder->where('izin.created_at >=', $tanggalAwal);
         } elseif (!empty($tanggalAkhir)) {
-            $builder->where('tanggalselesaiizin <=', $tanggalAkhir);
+            $builder->where('izin.created_at <=', $tanggalAkhir);
         }
 
         // Filter berdasarkan status
@@ -448,13 +448,13 @@ class Izin extends BaseController
         if (!empty($startDate) && !empty($endDate)) {
             // Mencari izin yang overlap dengan tanggal filter (tidak terlalu ketat)
             $builder->groupStart()
-                ->where('tanggalmulaiizin <=', $endDate) // izin dimulai sebelum periode filter berakhir
-                ->where('tanggalselesaiizin >=', $startDate) // izin berakhir setelah periode filter dimulai
+                ->where('izin.created_at <=', $endDate) // izin dimulai sebelum periode filter berakhir
+                ->where('izin.created_at >=', $startDate) // izin berakhir setelah periode filter dimulai
                 ->groupEnd();
         } elseif (!empty($startDate)) {
-            $builder->where('tanggalmulaiizin >=', $startDate);
+            $builder->where('izin.created_at >=', $startDate);
         } elseif (!empty($endDate)) {
-            $builder->where('tanggalselesaiizin <=', $endDate);
+            $builder->where('izin.created_at <=', $endDate);
         }
 
         // Filter berdasarkan status
