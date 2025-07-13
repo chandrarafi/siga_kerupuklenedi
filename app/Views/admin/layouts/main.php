@@ -1189,19 +1189,19 @@ $uri = service('uri');
 
                 <li class="nav-header mt-3">LAPORAN</li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Pegawai' ? 'active' : '' ?>" href="<?= site_url('admin/pegawai/report') ?>">
+                    <a class="nav-link <?= $title == 'Laporan Data Pegawai' ? 'active' : '' ?>" href="<?= site_url('admin/pegawai/report') ?>">
                         <i class="bi bi-file-earmark-bar-graph"></i>
                         <span>Laporan Pegawai</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan/report') ?>">
+                    <a class="nav-link <?= $title == 'Laporan Data Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan/report') ?>">
                         <i class="bi bi-file-earmark-bar-graph"></i>
                         <span>Laporan Jabatan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Izin' ? 'active' : '' ?>" href="<?= site_url('admin/izin/report') ?>">
+                    <a class="nav-link <?= $title == 'Laporan Pengajuan Izin' ? 'active' : '' ?>" href="<?= site_url('admin/izin/report') ?>">
                         <i class="bi bi-file-earmark-bar-graph"></i>
                         <span>Laporan Izin</span>
                     </a>
@@ -1219,7 +1219,7 @@ $uri = service('uri');
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Data Gaji' ? 'active' : '' ?>" href="<?= site_url('admin/gaji/report') ?>">
+                    <a class="nav-link <?= $title == 'Laporan Gaji' ? 'active' : '' ?>" href="<?= site_url('admin/gaji/report') ?>">
                         <i class="bi bi-file-earmark-bar-graph"></i>
                         <span>Laporan Gaji</span>
                     </a>

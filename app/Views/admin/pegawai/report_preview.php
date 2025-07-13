@@ -38,7 +38,7 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4" hidden>
                             <label class="form-label">Jenis Kelamin</label>
                             <select class="form-select" name="jenkel" id="jenkel">
                                 <option value="">Semua</option>

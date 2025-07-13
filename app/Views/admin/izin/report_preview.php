@@ -22,7 +22,7 @@
                             <label class="form-label">Tanggal Selesai</label>
                             <input type="text" class="form-control datepicker" name="end_date" id="end_date" value="<?= $filter['end_date'] ?>">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3" hidden>
                             <label class="form-label">Status</label>
                             <select class="form-select" name="status" id="status">
                                 <option value="">Semua Status</option>
@@ -31,7 +31,7 @@
                                 <option value="2" <?= $filter['status'] === '2' ? 'selected' : '' ?>>Ditolak</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3" hidden>
                             <label class="form-label">Pegawai</label>
                             <select class="form-select" name="pegawai_id" id="pegawai_id">
                                 <option value="">Semua Pegawai</option>
