@@ -20,7 +20,7 @@ class Admin extends BaseController
         return view('admin/dashboard', compact('title'));
     }
 
-    // User Management
+
     public function users()
     {
         $title = 'User Management';
@@ -31,7 +31,7 @@ class Admin extends BaseController
     {
         $request = $this->request;
 
-        // Parameters for DataTables
+
         $start = $request->getGet('start') ?? 0;
         $length = $request->getGet('length') ?? 10;
         $search = $request->getGet('search')['value'] ?? '';
@@ -42,14 +42,14 @@ class Admin extends BaseController
         $orderColumn = $order[0]['column'] ?? 0;
         $orderDir = $order[0]['dir'] ?? 'asc';
 
-        // Columns for ordering
+
         $columns = ['id', 'username', 'email', 'name', 'role', 'status', 'last_login'];
         $orderBy = $columns[$orderColumn] ?? 'id';
 
-        // Build query
+
         $builder = $this->userModel->builder();
 
-        // Filtering
+
         if (!empty($search)) {
             $builder->groupStart()
                 ->like('username', $search)
@@ -59,29 +59,29 @@ class Admin extends BaseController
                 ->groupEnd();
         }
 
-        // Role filter
+
         if (!empty($roleFilter)) {
             $builder->where('role', $roleFilter);
         }
 
-        // Status filter
+
         if (!empty($statusFilter)) {
             $builder->where('status', $statusFilter);
         }
 
-        // Count total records (without filters)
+
         $totalRecords = $this->userModel->countAll();
 
-        // Count filtered records
+
         $filteredRecords = $builder->countAllResults(false);
 
-        // Get data with limit, offset, order
+
         $data = $builder->orderBy($orderBy, $orderDir)
             ->limit($length, $start)
             ->get()
             ->getResultArray();
 
-        // Prepare response for DataTables
+
         $response = [
             'draw' => $request->getGet('draw') ?? 1,
             'recordsTotal' => $totalRecords,
@@ -139,14 +139,14 @@ class Admin extends BaseController
     {
         $data = $this->request->getPost();
 
-        // Pastikan ID selalu diset dengan benar
+
         if (!empty($id)) {
             $data['id'] = $id;
         } elseif (!empty($data['id'])) {
             $id = $data['id'];
         }
 
-        // Validasi ID
+
         if (empty($id)) {
             return $this->response->setStatusCode(400)->setJSON([
                 'status' => 'error',
@@ -155,7 +155,7 @@ class Admin extends BaseController
             ]);
         }
 
-        // Cek apakah user exists
+
         $existingUser = $this->userModel->find($id);
         if (!$existingUser) {
             return $this->response->setStatusCode(404)->setJSON([
@@ -185,8 +185,8 @@ class Admin extends BaseController
 
     public function getRoles()
     {
-        // Daftar role yang tersedia
-        $roles = ['admin', 'manager', 'user'];
+
+        $roles = ['admin', 'pimpinan', 'pegawai'];
 
         return $this->response->setJSON([
             'status' => 'success',

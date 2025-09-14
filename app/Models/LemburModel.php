@@ -21,14 +21,14 @@ class LemburModel extends Model
         'alasan'
     ];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = null;
 
-    // Validation
+
     protected $validationRules      = [
         'pegawai_id' => 'required',
         'tanggallembur' => 'required|valid_date',
@@ -84,7 +84,7 @@ class LemburModel extends Model
             ->findAll();
     }
 
-    // Mendapatkan data lembur dengan informasi pegawai
+
     public function getLemburWithPegawai($id = null)
     {
         $builder = $this->db->table('lembur');
@@ -111,7 +111,7 @@ class LemburModel extends Model
         $time1 = strtotime($jammulai);
         $time2 = strtotime($jamselesai);
 
-        // Jika jamselesai lebih kecil dari jammulai, berarti melewati tengah malam
+
         if ($time2 < $time1) {
             $time2 += 86400; // Tambah 24 jam
         }

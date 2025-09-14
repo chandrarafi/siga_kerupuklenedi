@@ -30,7 +30,7 @@ class Bagian extends BaseController
         $dtpostData = $postData;
         $response = array();
 
-        ## Read value
+
         $draw = $dtpostData['draw'];
         $start = $dtpostData['start'];
         $rowperpage = $dtpostData['length']; // Rows display per page
@@ -39,13 +39,13 @@ class Bagian extends BaseController
         $columnSortOrder = $dtpostData['order'][0]['dir']; // asc or desc
         $searchValue = $dtpostData['search']['value']; // Search value
 
-        ## Total number of records without filtering
+
         $totalRecords = $this->bagianModel->countAll();
 
-        ## Total number of records with filtering
+
         $totalRecordwithFilter = $this->bagianModel->like('namabagian', $searchValue)->countAllResults();
 
-        ## Fetch records
+
         $records = $this->bagianModel->select('*')
             ->like('namabagian', $searchValue)
             ->orderBy($columnName, $columnSortOrder)
@@ -62,7 +62,7 @@ class Bagian extends BaseController
             );
         }
 
-        ## Response
+
         $response = array(
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,

@@ -14,14 +14,14 @@ class AbsensiSettingModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = ['jam_masuk', 'jam_pulang'];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = '';
 
-    // Validation
+
     protected $validationRules      = [
         'jam_masuk' => 'required',
         'jam_pulang' => 'required',
@@ -37,7 +37,7 @@ class AbsensiSettingModel extends Model
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 
-    // Callbacks
+
     protected $allowCallbacks = true;
     protected $beforeInsert   = [];
     protected $afterInsert    = [];
@@ -48,7 +48,7 @@ class AbsensiSettingModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    // Get current settings
+
     public function getSettings()
     {
         return $this->first();

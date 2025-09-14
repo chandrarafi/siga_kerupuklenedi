@@ -26,20 +26,20 @@ class AbsensiModel extends Model
         'terlambat'
     ];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    // Validation
+
     protected $validationRules      = [];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 
-    // Callbacks
+
     protected $allowCallbacks = true;
     protected $beforeInsert   = [];
     protected $afterInsert    = [];
@@ -50,7 +50,7 @@ class AbsensiModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    // Relasi dengan tabel pegawai
+
     public function pegawai()
     {
         return $this->belongsTo(PegawaiModel::class, 'idpegawai', 'idpegawai');
@@ -117,7 +117,7 @@ class AbsensiModel extends Model
         return $builder->get()->getResultArray();
     }
 
-    // Cek apakah pegawai sudah absen pada tanggal tertentu
+
     public function isAbsenExists($idpegawai, $tanggal)
     {
         return $this->where('idpegawai', $idpegawai)

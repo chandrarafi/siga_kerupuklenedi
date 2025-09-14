@@ -1128,122 +1128,159 @@ $uri = service('uri');
                     </a>
                 </li>
 
-                <li class="nav-header mt-3">KEPEGAWAIAN</li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Data Bagian' ? 'active' : '' ?>" href="<?= site_url('admin/bagian') ?>">
-                        <i class="bi bi-diagram-3"></i>
-                        <span>Data Bagian</span>
-                    </a>
-                </li>
+                <?php if (session()->get('role') == 'pimpinan'): ?>
+                    <li class="nav-header mt-3">LAPORAN</li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Pegawai' ? 'active' : '' ?>" href="<?= site_url('admin/pegawai/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Pegawai</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Jabatan</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Pengajuan Izin' ? 'active' : '' ?>" href="<?= site_url('admin/izin/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Izin</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/absensi/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Absensi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Lembur</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Gaji' ? 'active' : '' ?>" href="<?= site_url('admin/gaji/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Gaji</span>
+                        </a>
+                    </li>
 
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan') ?>">
-                        <i class="bi bi-briefcase"></i>
-                        <span>Data Jabatan</span>
-                    </a>
-                </li>
+                <?php elseif (session()->get('role') == 'admin'): ?>
+                    <li class="nav-header mt-3">KEPEGAWAIAN</li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Data Bagian' ? 'active' : '' ?>" href="<?= site_url('admin/bagian') ?>">
+                            <i class="bi bi-diagram-3"></i>
+                            <span>Data Bagian</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan') ?>">
+                            <i class="bi bi-briefcase"></i>
+                            <span>Data Jabatan</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= site_url('admin/pegawai') ?>" class="nav-link <?= $uri->getSegment(2) == 'pegawai' ? 'active' : '' ?>">
+                            <i class="bi bi-people"></i>
+                            <span>Pegawai</span>
+                        </a>
+                    </li>
 
-                <li class="nav-item">
-                    <a href="<?= site_url('admin/pegawai') ?>" class="nav-link <?= $uri->getSegment(2) == 'pegawai' ? 'active' : '' ?>">
-                        <i class="bi bi-people"></i>
-                        <span>Pegawai</span>
-                    </a>
-                </li>
+                    <li class="nav-header mt-3">ABSENSI</li>
+                    <li class="nav-item">
+                        <a href="<?= site_url('admin/absensi') ?>" class="nav-link <?= $uri->getSegment(2) == 'absensi' ? 'active' : '' ?>">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Absensi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= site_url('admin/izin') ?>" class="nav-link <?= $uri->getSegment(2) == 'izin' ? 'active' : '' ?>">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Pengajuan Izin</span>
+                            <?php
+                            $izinModel = new \App\Models\IzinModel();
+                            $pendingCount = $izinModel->countPendingIzin();
+                            if ($pendingCount > 0) :
+                            ?>
+                                <span class="badge bg-danger rounded-pill"><?= $pendingCount ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur') ?>">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Data Lembur</span>
+                        </a>
+                    </li>
 
+                    <li class="nav-header mt-3">PENGGAJIAN</li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $uri->getSegment(2) == 'gaji' && !$uri->getSegment(3) ? 'active' : '' ?>" href="<?= site_url('admin/gaji') ?>">
+                            <i class="bi bi-cash-stack"></i>
+                            <span>Data Gaji</span>
+                        </a>
+                    </li>
 
-                <li class="nav-header mt-3">ABSENSI</li>
-                <li class="nav-item">
-                    <a href="<?= site_url('admin/absensi') ?>" class="nav-link <?= $uri->getSegment(2) == 'absensi' ? 'active' : '' ?>">
-                        <i class="bi bi-clipboard-check"></i>
-                        <span>Absensi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= site_url('admin/izin') ?>" class="nav-link <?= $uri->getSegment(2) == 'izin' ? 'active' : '' ?>">
-                        <i class="bi bi-calendar-check"></i>
-                        <span>Pengajuan Izin</span>
-                        <?php
-                        $izinModel = new \App\Models\IzinModel();
-                        $pendingCount = $izinModel->countPendingIzin();
-                        if ($pendingCount > 0) :
-                        ?>
-                            <span class="badge bg-danger rounded-pill"><?= $pendingCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur') ?>">
-                        <i class="bi bi-clock-history"></i>
-                        <span>Data Lembur</span>
-                    </a>
-                </li>
+                    <li class="nav-header mt-3">LAPORAN</li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Pegawai' ? 'active' : '' ?>" href="<?= site_url('admin/pegawai/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Pegawai</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Jabatan</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Pengajuan Izin' ? 'active' : '' ?>" href="<?= site_url('admin/izin/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Izin</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/absensi/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Absensi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Data Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Lembur</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Laporan Gaji' ? 'active' : '' ?>" href="<?= site_url('admin/gaji/report') ?>">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                            <span>Laporan Gaji</span>
+                        </a>
+                    </li>
 
-                <li class="nav-header mt-3">PENGGAJIAN</li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $uri->getSegment(2) == 'gaji' && !$uri->getSegment(3) ? 'active' : '' ?>" href="<?= site_url('admin/gaji') ?>">
-                        <i class="bi bi-cash-stack"></i>
-                        <span>Data Gaji</span>
-                    </a>
-                </li>
-
-
-                <li class="nav-header mt-3">LAPORAN</li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Data Pegawai' ? 'active' : '' ?>" href="<?= site_url('admin/pegawai/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Laporan Pegawai</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Data Jabatan' ? 'active' : '' ?>" href="<?= site_url('admin/jabatan/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Laporan Jabatan</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Pengajuan Izin' ? 'active' : '' ?>" href="<?= site_url('admin/izin/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Laporan Izin</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Data Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/absensi/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Laporan Absensi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Data Lembur' ? 'active' : '' ?>" href="<?= site_url('admin/lembur/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Laporan Lembur</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Laporan Gaji' ? 'active' : '' ?>" href="<?= site_url('admin/gaji/report') ?>">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Laporan Gaji</span>
-                    </a>
-                </li>
-
-                <li class="nav-header mt-3">PENGATURAN</li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'User Management' ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">
-                        <i class="bi bi-person-gear"></i>
-                        <span>Manajemen User</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Lokasi Kantor' ? 'active' : '' ?>" href="<?= site_url('admin/settings/office-location') ?>">
-                        <i class="bi bi-geo-alt"></i>
-                        <span>Lokasi Kantor</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $title == 'Jam Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/settings/absensi-settings') ?>">
-                        <i class="bi bi-clock"></i>
-                        <span>Jam Absensi</span>
-                    </a>
-                </li>
+                    <li class="nav-header mt-3">PENGATURAN</li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'User Management' ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">
+                            <i class="bi bi-person-gear"></i>
+                            <span>Manajemen User</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Lokasi Kantor' ? 'active' : '' ?>" href="<?= site_url('admin/settings/office-location') ?>">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Lokasi Kantor</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $title == 'Jam Absensi' ? 'active' : '' ?>" href="<?= site_url('admin/settings/absensi-settings') ?>">
+                            <i class="bi bi-clock"></i>
+                            <span>Jam Absensi</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
 
                 <li class="nav-item">
                     <a class="nav-link" id="btn-logout">

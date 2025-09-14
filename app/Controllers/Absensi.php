@@ -25,12 +25,12 @@ class Absensi extends BaseController
         $query = $this->absensiModel->select('absensi.*, pegawai.namapegawai')
             ->join('pegawai', 'pegawai.idpegawai = absensi.idpegawai');
 
-        // Jika tanggal diisi, filter berdasarkan tanggal
+
         if ($tanggal) {
             $query->where('tanggal', $tanggal);
         }
 
-        // Urutkan berdasarkan tanggal terbaru
+
         $query->orderBy('tanggal', 'DESC');
 
         $absensi = $query->findAll();
@@ -56,7 +56,7 @@ class Absensi extends BaseController
 
     public function store()
     {
-        // Validasi input
+
         $rules = [
             'idpegawai' => 'required',
             'tanggal' => 'required|valid_date',
@@ -73,7 +73,7 @@ class Absensi extends BaseController
         $idpegawai = $this->request->getPost('idpegawai');
         $tanggal = $this->request->getPost('tanggal');
 
-        // Cek apakah sudah ada absensi untuk pegawai pada tanggal tersebut
+
         if ($this->absensiModel->isAbsenExists($idpegawai, $tanggal)) {
             session()->setFlashdata('error', 'Pegawai sudah melakukan absensi pada tanggal ini');
             return redirect()->back()->withInput();
@@ -119,7 +119,7 @@ class Absensi extends BaseController
 
     public function update($id = null)
     {
-        // Validasi input
+
         $rules = [
             'idpegawai' => 'required',
             'tanggal' => 'required|valid_date',
@@ -136,10 +136,10 @@ class Absensi extends BaseController
         $idpegawai = $this->request->getPost('idpegawai');
         $tanggal = $this->request->getPost('tanggal');
 
-        // Cek apakah data yang diupdate adalah milik pegawai yang sama dan tanggal yang sama
+
         $existingAbsensi = $this->absensiModel->find($id);
 
-        // Jika pegawai atau tanggal berubah, cek apakah sudah ada absensi untuk pegawai pada tanggal tersebut
+
         if (($existingAbsensi['idpegawai'] != $idpegawai || $existingAbsensi['tanggal'] != $tanggal) &&
             $this->absensiModel->isAbsenExists($idpegawai, $tanggal)
         ) {
@@ -178,12 +178,12 @@ class Absensi extends BaseController
         return redirect()->to('admin/absensi');
     }
 
-    // API untuk absensi pegawai (akan diimplementasikan nanti)
+
     public function apiAbsen()
     {
-        // Validasi API key atau token
 
-        // Proses absensi
+
+
         $idpegawai = $this->request->getVar('idpegawai');
         $tanggal = date('Y-m-d');
         $jammasuk = date('H:i:s');
@@ -191,7 +191,7 @@ class Absensi extends BaseController
         $longitude_masuk = $this->request->getVar('longitude');
         $latitude_masuk = $this->request->getVar('latitude');
 
-        // Cek apakah sudah absen hari ini
+
         if ($this->absensiModel->isAbsenExists($idpegawai, $tanggal)) {
             return $this->response->setJSON([
                 'status' => false,
@@ -223,14 +223,14 @@ class Absensi extends BaseController
 
     public function apiPulang()
     {
-        // Validasi API key atau token
 
-        // Proses absensi pulang
+
+
         $idpegawai = $this->request->getVar('idpegawai');
         $tanggal = date('Y-m-d');
         $jamkeluar = date('H:i:s');
 
-        // Cek apakah sudah absen masuk hari ini
+
         $absensi = $this->absensiModel->where('idpegawai', $idpegawai)
             ->where('tanggal', $tanggal)
             ->first();

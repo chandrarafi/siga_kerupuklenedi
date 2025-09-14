@@ -37,20 +37,20 @@ class Pegawai extends BaseController
     {
         $request = $this->request->getPost();
 
-        // DataTables parameters
+
         $start = $request['start'] ?? 0;
         $length = $request['length'] ?? 10;
         $search = $request['search']['value'] ?? '';
         $order = $request['order'] ?? [];
 
-        // Get data
+
         $builder = $this->db->table('pegawai');
         $builder->select('pegawai.*, jabatan.namajabatan, bagian.namabagian, users.username, users.email');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid');
         $builder->join('bagian', 'bagian.idbagian = jabatan.bagianid');
         $builder->join('users', 'users.id = pegawai.userid');
 
-        // Search
+
         if (!empty($search)) {
             $builder->groupStart()
                 ->like('pegawai.idpegawai', $search)
@@ -61,10 +61,10 @@ class Pegawai extends BaseController
                 ->groupEnd();
         }
 
-        // Count filtered results
+
         $filteredCount = $builder->countAllResults(false);
 
-        // Order
+
         if (!empty($order)) {
             $columns = ['', 'pegawai.idpegawai', 'pegawai.namapegawai', 'pegawai.nik', 'jabatan.namajabatan', 'bagian.namabagian', 'pegawai.jenkel', 'pegawai.nohp'];
             $orderColumn = $columns[$order[0]['column']] ?? 'pegawai.namapegawai';
@@ -74,16 +74,16 @@ class Pegawai extends BaseController
             $builder->orderBy('pegawai.namapegawai', 'asc');
         }
 
-        // Limit and offset
+
         $builder->limit($length, $start);
 
-        // Get results
+
         $results = $builder->get()->getResultArray();
 
-        // Count total records
+
         $totalCount = $this->db->table('pegawai')->countAllResults();
 
-        // Format data for DataTables
+
         $data = [];
         foreach ($results as $row) {
             $data[] = [
@@ -122,10 +122,10 @@ class Pegawai extends BaseController
 
     public function create()
     {
-        // Generate ID pegawai baru
+
         $idpegawai = $this->pegawaiModel->generateIdPegawai();
 
-        // Jika request AJAX atau GET, kembalikan dalam format JSON
+
         if ($this->request->isAJAX() || $this->request->getMethod(true) === 'GET') {
             return $this->response->setJSON([
                 'status' => true,
@@ -134,7 +134,7 @@ class Pegawai extends BaseController
             ]);
         }
 
-        // Jika bukan AJAX, tampilkan view seperti biasa
+
         $data = [
             'title' => 'Tambah Pegawai',
             'jabatan' => $this->jabatanModel->select('jabatan.*, bagian.namabagian')
@@ -148,11 +148,11 @@ class Pegawai extends BaseController
 
     public function store()
     {
-        // Log untuk debugging
+
         log_message('debug', 'Pegawai::store() dipanggil');
         log_message('debug', 'POST data: ' . json_encode($this->request->getPost()));
 
-        // Validasi input
+
         $rules = [
             'namapegawai' => 'required|max_length[255]',
             'jabatanid' => 'required|integer',
@@ -211,18 +211,18 @@ class Pegawai extends BaseController
             ]);
         }
 
-        // Mulai transaksi database
+
         $this->db->transBegin();
 
         try {
-            // Pastikan ID pegawai valid
+
             $idpegawai = $this->request->getPost('idpegawai');
             if (empty($idpegawai)) {
                 $idpegawai = $this->pegawaiModel->generateIdPegawai();
             }
             log_message('debug', 'ID Pegawai: ' . $idpegawai);
 
-            // Insert data user
+
             $userData = [
                 'username' => $this->request->getPost('username'),
                 'email' => $this->request->getPost('email'),
@@ -233,7 +233,7 @@ class Pegawai extends BaseController
             ];
             log_message('debug', 'User data: ' . json_encode($userData));
 
-            // Nonaktifkan validasi model dan gunakan validasi manual
+
             $this->userModel->skipValidation(true);
             $userInserted = $this->userModel->insert($userData);
 
@@ -250,7 +250,7 @@ class Pegawai extends BaseController
                 throw new \Exception('User ID tidak valid');
             }
 
-            // Insert data pegawai
+
             $pegawaiData = [
                 'idpegawai' => $idpegawai,
                 'userid' => $userId,
@@ -263,7 +263,7 @@ class Pegawai extends BaseController
             ];
             log_message('debug', 'Pegawai data: ' . json_encode($pegawaiData));
 
-            // Bypass validasi model karena kita sudah memvalidasi di controller
+
             $this->pegawaiModel->skipValidation(true);
             $result = $this->pegawaiModel->insert($pegawaiData);
             log_message('debug', 'Hasil insert pegawai: ' . ($result ? 'berhasil' : 'gagal'));
@@ -273,7 +273,7 @@ class Pegawai extends BaseController
                 throw new \Exception('Gagal menyimpan data pegawai');
             }
 
-            // Commit transaksi jika berhasil
+
             $this->db->transCommit();
             log_message('debug', 'Transaksi berhasil di-commit');
 
@@ -283,7 +283,7 @@ class Pegawai extends BaseController
                 'token' => csrf_hash()
             ]);
         } catch (\Exception $e) {
-            // Rollback transaksi jika gagal
+
             $this->db->transRollback();
             log_message('error', 'Error saat menyimpan data: ' . $e->getMessage());
             log_message('error', 'Stack trace: ' . $e->getTraceAsString());
@@ -351,7 +351,7 @@ class Pegawai extends BaseController
             return redirect()->to('/admin/pegawai')->with('error', 'Data pegawai tidak ditemukan');
         }
 
-        // Validasi input untuk data pegawai
+
         $rules = [
             'jabatanid' => 'required|integer',
             'nik' => 'permit_empty|max_length[16]',
@@ -390,17 +390,17 @@ class Pegawai extends BaseController
             ],
         ];
 
-        // Validasi data user
+
         $user = $this->userModel->find($pegawai['userid']);
         $email = $this->request->getPost('email');
 
-        // Cek apakah email diubah dan sudah ada di database
+
         if ($email != $user['email']) {
             $rules['email'] = 'required|valid_email|is_unique[users.email,id,' . $user['id'] . ']';
             $messages['email']['is_unique'] = 'Email sudah digunakan';
         }
 
-        // Validasi password jika diisi
+
         if ($this->request->getPost('password')) {
             $rules['password'] = 'min_length[6]';
             $messages['password'] = [
@@ -419,11 +419,11 @@ class Pegawai extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Mulai transaksi database
+
         $this->db->transBegin();
 
         try {
-            // Update data pegawai
+
             $pegawaiData = [
                 'jabatanid' => $this->request->getPost('jabatanid'),
                 'nik' => $this->request->getPost('nik'),
@@ -433,7 +433,7 @@ class Pegawai extends BaseController
                 'nohp' => $this->request->getPost('nohp'),
             ];
 
-            // Skip validasi model karena kita sudah validasi di controller
+
             $this->pegawaiModel->skipValidation(true);
             $pegawaiUpdated = $this->pegawaiModel->update($id, $pegawaiData);
 
@@ -441,18 +441,18 @@ class Pegawai extends BaseController
                 throw new \Exception('Gagal memperbarui data pegawai: ' . json_encode($this->pegawaiModel->errors()));
             }
 
-            // Update data user
+
             $userData = [
                 'email' => $this->request->getPost('email'),
                 'name' => $this->request->getPost('namapegawai'),
             ];
 
-            // Jika password diisi, update password
+
             if ($this->request->getPost('password')) {
                 $userData['password'] = $this->request->getPost('password');
             }
 
-            // Skip validasi model karena kita sudah validasi di controller
+
             $this->userModel->skipValidation(true);
             $userUpdated = $this->userModel->update($user['id'], $userData);
 
@@ -460,7 +460,7 @@ class Pegawai extends BaseController
                 throw new \Exception('Gagal memperbarui data user: ' . json_encode($this->userModel->errors()));
             }
 
-            // Commit transaksi jika berhasil
+
             $this->db->transCommit();
 
             if ($this->request->isAJAX()) {
@@ -473,7 +473,7 @@ class Pegawai extends BaseController
 
             return redirect()->to('/admin/pegawai')->with('success', 'Data pegawai berhasil diperbarui');
         } catch (\Exception $e) {
-            // Rollback transaksi jika gagal
+
             $this->db->transRollback();
             log_message('error', 'Error saat update data: ' . $e->getMessage());
 
@@ -501,17 +501,17 @@ class Pegawai extends BaseController
             ]);
         }
 
-        // Mulai transaksi database
+
         $this->db->transBegin();
 
         try {
-            // Hapus data pegawai
+
             $this->pegawaiModel->delete($id);
 
-            // Hapus data user
+
             $this->userModel->delete($pegawai['userid']);
 
-            // Commit transaksi jika berhasil
+
             $this->db->transCommit();
 
             return $this->response->setJSON([
@@ -520,7 +520,7 @@ class Pegawai extends BaseController
                 'token' => csrf_hash()
             ]);
         } catch (\Exception $e) {
-            // Rollback transaksi jika gagal
+
             $this->db->transRollback();
 
             return $this->response->setJSON([
@@ -533,27 +533,27 @@ class Pegawai extends BaseController
 
     public function report()
     {
-        // Get filter parameters
+
         $bagianId = $this->request->getGet('bagian');
         $jabatanId = $this->request->getGet('jabatan');
         $jenisKelamin = $this->request->getGet('jenkel');
         $isAjax = $this->request->getGet('ajax');
 
-        // Get all bagian for filter dropdown
+
         $bagianModel = new \App\Models\BagianModel();
         $bagianList = $bagianModel->findAll();
 
-        // Get all jabatan for filter dropdown
+
         $jabatanModel = new \App\Models\JabatanModel();
         $jabatanList = $jabatanModel->findAll();
 
-        // Get all pegawai data with join to jabatan and bagian
+
         $builder = $this->db->table('pegawai');
         $builder->select('pegawai.*, jabatan.namajabatan, bagian.namabagian, jabatan.bagianid');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid');
         $builder->join('bagian', 'bagian.idbagian = jabatan.bagianid');
 
-        // Apply filters if provided
+
         if (!empty($bagianId)) {
             $builder->where('bagian.idbagian', $bagianId);
         }
@@ -569,7 +569,7 @@ class Pegawai extends BaseController
         $builder->orderBy('pegawai.namapegawai', 'ASC');
         $pegawai = $builder->get()->getResultArray();
 
-        // Get filter names for display
+
         $bagian_name = '';
         $jabatan_name = '';
 
@@ -605,17 +605,17 @@ class Pegawai extends BaseController
             'jabatan_name' => $jabatan_name
         ];
 
-        // Jika request untuk cetak PDF
+
         if ($this->request->getGet('print') == 'true') {
             return $this->generatePDF($data);
         }
 
-        // Jika request AJAX, kembalikan hanya bagian laporan
+
         if ($isAjax) {
             return view('admin/pegawai/report_partial', $data);
         }
 
-        // Jika tidak, tampilkan dengan layout admin
+
         return view('admin/pegawai/report_preview', $data);
     }
 
@@ -624,33 +624,33 @@ class Pegawai extends BaseController
      */
     protected function generatePDF($data)
     {
-        // Tambahkan path logo
+
         $data['logo'] = ROOTPATH . 'public/image/logo.png';
 
-        // Jika logo tidak ada, gunakan placeholder
+
         if (!file_exists($data['logo'])) {
             $data['logo'] = '';
         } else {
-            // Convert logo to base64 for embedding in PDF
+
             $data['logo'] = 'data:image/png;base64,' . base64_encode(file_get_contents($data['logo']));
         }
 
-        // Load PDF helper
+
         $pdfHelper = new \App\Helpers\PdfHelper();
 
-        // Generate PDF
+
         $html = view('admin/pegawai/pdf_template', $data);
 
-        // Filename dengan timestamp
+
         $filename = 'laporan_pegawai_' . date('Ymd_His') . '.pdf';
 
-        // Generate PDF
+
         return $pdfHelper->generate($html, $filename, 'A4', 'portrait', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);
     }
 
-    // Method untuk mendapatkan jabatan berdasarkan bagian
+
     public function getJabatanByBagian()
     {
         $bagianId = $this->request->getGet('bagian_id');

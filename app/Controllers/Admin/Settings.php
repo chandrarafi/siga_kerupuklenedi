@@ -45,7 +45,7 @@ class Settings extends BaseController
             ]);
         }
 
-        // Validasi input
+
         $rules = [
             'name' => 'required',
             'address' => 'required',
@@ -62,7 +62,7 @@ class Settings extends BaseController
         }
 
         try {
-            // Cek apakah sudah ada setting
+
             $existing = $this->officeSettingModel->first();
 
             if ($existing) {

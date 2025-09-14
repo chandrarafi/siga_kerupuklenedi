@@ -103,7 +103,6 @@
                                 <select id="metodepembayaran" name="metodepembayaran" class="form-select <?= (session()->has('errors') && isset(session('errors')['metodepembayaran'])) ? 'is-invalid' : '' ?>" required>
                                     <option value="Transfer Bank" <?= old('metodepembayaran', $gaji['metodepembayaran']) == 'Transfer Bank' ? 'selected' : '' ?>>Transfer Bank</option>
                                     <option value="Tunai" <?= old('metodepembayaran', $gaji['metodepembayaran']) == 'Tunai' ? 'selected' : '' ?>>Tunai</option>
-                                    <option value="Cek" <?= old('metodepembayaran', $gaji['metodepembayaran']) == 'Cek' ? 'selected' : '' ?>>Cek</option>
                                 </select>
                                 <?php if (session()->has('errors') && isset(session('errors')['metodepembayaran'])) : ?>
                                     <div class="invalid-feedback">

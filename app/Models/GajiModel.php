@@ -27,14 +27,14 @@ class GajiModel extends Model
         'keterangan'
     ];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = null;
 
-    // Validation
+
     protected $validationRules      = [
         'pegawai_id' => 'required',
         'periode' => 'required',
@@ -67,7 +67,7 @@ class GajiModel extends Model
      */
     public function generateNoSlip($periode)
     {
-        // Format periode: MM-YYYY
+
         $periode = str_replace('-', '', $periode);
         $lastSlip = $this->select('noslip')
             ->like('noslip', "SLIP{$periode}")
@@ -94,13 +94,13 @@ class GajiModel extends Model
     public function hitungTotalAbsensi($pegawaiId, $periode)
     {
         try {
-            // Pisahkan bulan dan tahun
+
             list($bulan, $tahun) = explode('-', $periode);
 
             $db = \Config\Database::connect();
             $builder = $db->table('absensi');
 
-            // Hitung total hari kerja (status = 'hadir')
+
             $result = $builder->select('COUNT(*) as total_hari')
                 ->where('idpegawai', $pegawaiId)
                 ->where('MONTH(tanggal)', $bulan)
@@ -126,13 +126,13 @@ class GajiModel extends Model
     public function hitungTotalLembur($pegawaiId, $periode)
     {
         try {
-            // Pisahkan bulan dan tahun
+
             list($bulan, $tahun) = explode('-', $periode);
 
             $db = \Config\Database::connect();
             $builder = $db->table('lembur');
 
-            // Hitung total durasi lembur dalam menit
+
             $result = $builder->select('SUM(TIMESTAMPDIFF(MINUTE, jammulai, jamselesai)) as total_menit')
                 ->where('pegawai_id', $pegawaiId)
                 ->where('MONTH(tanggallembur)', $bulan)
@@ -140,7 +140,7 @@ class GajiModel extends Model
                 ->get()
                 ->getRow();
 
-            // Konversi menit ke jam
+
             $totalMenit = $result ? (float)$result->total_menit : 0;
             $totalJam = $totalMenit / 60;
 
@@ -162,13 +162,13 @@ class GajiModel extends Model
     public function hitungPotonganKeterlambatan($pegawaiId, $periode, $potonganPerMenit = 1000)
     {
         try {
-            // Pisahkan bulan dan tahun
+
             list($bulan, $tahun) = explode('-', $periode);
 
             $db = \Config\Database::connect();
             $builder = $db->table('absensi');
 
-            // Hitung total keterlambatan dalam menit
+
             $result = $builder->select('SUM(terlambat) as total_terlambat')
                 ->where('idpegawai', $pegawaiId)
                 ->where('MONTH(tanggal)', $bulan)
@@ -199,7 +199,7 @@ class GajiModel extends Model
             $db = \Config\Database::connect();
             $pegawaiModel = new PegawaiModel();
 
-            // Validasi pegawaiId
+
             if (empty($pegawaiId)) {
                 return [
                     'status' => false,
@@ -207,7 +207,7 @@ class GajiModel extends Model
                 ];
             }
 
-            // Validasi format periode
+
             if (!preg_match('/^\d{2}-\d{4}$/', $periode)) {
                 return [
                     'status' => false,
@@ -215,7 +215,7 @@ class GajiModel extends Model
                 ];
             }
 
-            // Ambil data pegawai
+
             $pegawai = $pegawaiModel->find($pegawaiId);
             if (!$pegawai) {
                 return [
@@ -224,7 +224,7 @@ class GajiModel extends Model
                 ];
             }
 
-            // Ambil data jabatan dan gaji pokok
+
             $builder = $db->table('pegawai');
             $builder->select('pegawai.*, jabatan.namajabatan as nama_jabatan, jabatan.gajipokok, jabatan.tunjangan, bagian.namabagian');
             $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid');
@@ -239,25 +239,25 @@ class GajiModel extends Model
                 ];
             }
 
-            // Hitung komponen gaji
+
             $totalAbsensi = $this->hitungTotalAbsensi($pegawaiId, $periode);
             $totalLembur = $this->hitungTotalLembur($pegawaiId, $periode);
 
-            // Hitung gaji bersih dengan rumus baru
+
             $gajiPokok = $dataPegawai['gajipokok'];
 
-            // Tunjangan tergantung kehadiran
-            // Asumsi hari kerja dalam sebulan adalah 30 hari
+
+
             $hariKerjaNormal = 30;
             $tunjanganPenuh = $dataPegawai['tunjangan'];
             $tunjanganPerHari = $tunjanganPenuh / $hariKerjaNormal;
             $tunjangan = $tunjanganPerHari * $totalAbsensi;
 
-            // Lembur dengan tarif Rp 20.000 per jam
+
             $tarifLembur = 20000; // Tarif lembur per jam
             $upahLembur = $totalLembur * $tarifLembur;
 
-            // Hitung gaji bersih tanpa potongan
+
             $gajiBruto = $gajiPokok + $tunjangan + $upahLembur;
             $gajiBersih = $gajiBruto;
 

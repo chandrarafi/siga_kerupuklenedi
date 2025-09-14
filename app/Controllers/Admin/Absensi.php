@@ -32,12 +32,12 @@ class Absensi extends BaseController
         $query = $this->absensiModel->select('absensi.*, pegawai.namapegawai')
             ->join('pegawai', 'pegawai.idpegawai = absensi.idpegawai');
 
-        // Jika tanggal diisi, filter berdasarkan tanggal
+
         if ($tanggal) {
             $query->where('tanggal', $tanggal);
         }
 
-        // Urutkan berdasarkan tanggal terbaru
+
         $query->orderBy('tanggal', 'DESC');
 
         $absensi = $query->findAll();
@@ -53,7 +53,7 @@ class Absensi extends BaseController
 
     public function report()
     {
-        // Ambil parameter filter
+
         $pegawaiId = $this->request->getGet('pegawai');
         $status = $this->request->getGet('status');
         $tanggalAwal = $this->request->getGet('tanggal_awal');
@@ -61,7 +61,7 @@ class Absensi extends BaseController
         $isPrint = $this->request->getGet('print');
         $isAjax = $this->request->getGet('ajax');
 
-        // Inisialisasi filter
+
         $filters = [
             'pegawai' => $pegawaiId,
             'status' => $status,
@@ -69,7 +69,7 @@ class Absensi extends BaseController
             'tanggal_akhir' => $tanggalAkhir
         ];
 
-        // Jika tidak ada filter yang aktif dan bukan permintaan print
+
         if (!$isPrint && !$isAjax && !$pegawaiId && !$status && !$tanggalAwal && !$tanggalAkhir) {
             $data = [
                 'title' => 'Laporan Data Absensi',
@@ -79,13 +79,13 @@ class Absensi extends BaseController
             return view('admin/absensi/report_preview', $data);
         }
 
-        // Query data absensi dengan filter
+
         $query = $this->absensiModel
             ->select('absensi.*, pegawai.namapegawai, jabatan.namajabatan')
             ->join('pegawai', 'pegawai.idpegawai = absensi.idpegawai')
             ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid');
 
-        // Terapkan filter
+
         if ($pegawaiId) {
             $query->where('absensi.idpegawai', $pegawaiId);
         }
@@ -101,12 +101,12 @@ class Absensi extends BaseController
             $query->where('absensi.tanggal', $tanggalAwal);
         }
 
-        // Urutkan berdasarkan tanggal
+
         $query->orderBy('absensi.tanggal', 'DESC');
 
         $absensi = $query->findAll();
 
-        // Ambil nama pegawai jika filter pegawai aktif
+
         $pegawai_name = '';
         if ($pegawaiId) {
             $pegawai = $this->pegawaiModel->find($pegawaiId);
@@ -122,44 +122,44 @@ class Absensi extends BaseController
             'pegawai_name' => $pegawai_name
         ];
 
-        // Jika permintaan cetak PDF
+
         if ($isPrint) {
             return $this->generatePdf($data);
         }
 
-        // Jika permintaan AJAX, tampilkan partial view
+
         if ($isAjax) {
             return view('admin/absensi/report_partial', $data);
         }
 
-        // Jika bukan AJAX dan bukan print, tampilkan halaman lengkap
+
         $data['pegawaiList'] = $this->pegawaiModel->findAll();
         return view('admin/absensi/report_preview', $data);
     }
 
     private function generatePdf($data)
     {
-        // Tambahkan path logo
+
         $data['logo'] = ROOTPATH . 'public/image/logo.png';
 
-        // Jika logo tidak ada, gunakan placeholder
+
         if (!file_exists($data['logo'])) {
             $data['logo'] = '';
         } else {
-            // Convert logo to base64 for embedding in PDF
+
             $data['logo'] = 'data:image/png;base64,' . base64_encode(file_get_contents($data['logo']));
         }
 
-        // Load PDF helper
+
         $pdfHelper = new \App\Helpers\PdfHelper();
 
-        // Generate PDF
+
         $html = view('admin/absensi/pdf_template', $data);
 
-        // Filename dengan timestamp
+
         $filename = 'Laporan_Absensi_' . date('Y-m-d_H-i-s') . '.pdf';
 
-        // Generate PDF
+
         return $pdfHelper->generate($html, $filename, 'A4', 'landscape', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);

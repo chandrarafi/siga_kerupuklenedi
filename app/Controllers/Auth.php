@@ -11,13 +11,13 @@ class Auth extends BaseController
     public function __construct()
     {
         $this->userModel = new UserModel();
-        // Load helper cookie
+
         helper('cookie');
     }
 
     public function index()
     {
-        // Jika sudah login, redirect ke dashboard
+
         if (session()->get('logged_in')) {
             return redirect()->to(session()->get('redirect_url') ?? 'admin');
         }
@@ -38,7 +38,7 @@ class Auth extends BaseController
 
 
         if ($user) {
-            // Debug log
+
 
             if ($user['status'] !== 'active') {
                 return $this->response->setJSON([
@@ -49,12 +49,12 @@ class Auth extends BaseController
 
 
             if (password_verify($password, $user['password'])) {
-                // Update last login
+
                 $this->userModel->update($user['id'], [
                     'last_login' => date('Y-m-d H:i:s')
                 ]);
 
-                // Set session
+
                 $sessionData = [
                     'user_id' => $user['id'],
                     'username' => $user['username'],
@@ -65,7 +65,7 @@ class Auth extends BaseController
                 ];
                 session()->set($sessionData);
 
-                // Set remember me cookie jika dipilih
+
                 if ($remember) {
                     $this->setRememberMeCookie($user['id']);
                 }
@@ -87,13 +87,13 @@ class Auth extends BaseController
 
     public function logout()
     {
-        // Hapus remember me cookie
+
         if (get_cookie('remember_token')) {
             delete_cookie('remember_token');
             delete_cookie('user_id');
         }
 
-        // Destroy session
+
         session()->destroy();
 
         return redirect()->to('auth')->with('message', 'Anda telah berhasil logout');
@@ -103,16 +103,16 @@ class Auth extends BaseController
     {
         $token = bin2hex(random_bytes(32));
 
-        // Simpan token di database
+
         $this->userModel->update($userId, [
             'remember_token' => $token
         ]);
 
-        // Set cookies yang akan expired dalam 30 hari
+
         $expires = 30 * 24 * 60 * 60; // 30 hari
         $secure = isset($_SERVER['HTTPS']); // Set secure hanya jika HTTPS
 
-        // Set cookie untuk remember token
+
         set_cookie(
             'remember_token',
             $token,
@@ -124,7 +124,7 @@ class Auth extends BaseController
             true  // httponly
         );
 
-        // Set cookie untuk user ID
+
         set_cookie(
             'user_id',
             $userId,

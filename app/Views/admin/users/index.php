@@ -246,9 +246,9 @@
 
                         if (data === 'admin') {
                             badgeClass = 'bg-primary';
-                        } else if (data === 'manager') {
+                        } else if (data === 'pimpinan') {
                             badgeClass = 'bg-info';
-                        } else if (data === 'user') {
+                        } else if (data === 'karyawan') {
                             badgeClass = 'bg-dark';
                         }
 

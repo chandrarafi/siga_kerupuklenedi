@@ -15,20 +15,20 @@ class UserModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = ['username', 'email', 'password', 'role', 'name', 'status', 'last_login', 'remember_token'];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    // Validation
+
     protected $validationRules = [];
     protected $validationMessages = [];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 
-    // Callbacks
+
     protected $allowCallbacks = true;
     protected $beforeInsert   = ['hashPassword'];
     protected $beforeUpdate   = ['hashPassword'];
@@ -68,7 +68,7 @@ class UserModel extends Model
                 ]
             ],
             'role' => [
-                'rules' => 'required|in_list[admin,manager,user,pegawai]',
+                'rules' => 'required|in_list[admin,pimpinan,user,pegawai]',
                 'errors' => [
                     'required' => 'Role harus dipilih',
                     'in_list' => 'Role tidak valid'
@@ -95,7 +95,7 @@ class UserModel extends Model
 
     public function save($data): bool
     {
-        // Jika ini adalah update, ubah validasi password menjadi opsional
+
         if (!empty($data['id'])) {
             $this->validationRules['password']['rules'] = 'permit_empty|min_length[6]';
         }

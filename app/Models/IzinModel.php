@@ -25,14 +25,14 @@ class IzinModel extends Model
         'keterangan_admin'
     ];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = null;
 
-    // Validation
+
     protected $validationRules      = [
         'pegawai_id' => 'required',
         'tanggalmulaiizin' => 'required|valid_date',
@@ -88,7 +88,7 @@ class IzinModel extends Model
             ->findAll();
     }
 
-    // Mendapatkan data izin dengan informasi pegawai
+
     public function getIzinWithPegawai($id = null)
     {
         $builder = $this->db->table('izin');
@@ -103,7 +103,7 @@ class IzinModel extends Model
         return $builder->orderBy('izin.created_at', 'DESC')->get()->getResultArray();
     }
 
-    // Menghitung jumlah izin yang belum disetujui
+
     public function countPendingIzin()
     {
         return $this->where('statusizin', false)

@@ -27,7 +27,7 @@ class Izin extends BaseController
         $userId = $this->session->get('user_id');
         $pegawai = $this->pegawaiModel->getPegawaiByUserId($userId);
 
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->getGet('ajax') == 1;
 
         if (!$pegawai) {
@@ -47,7 +47,7 @@ class Izin extends BaseController
         ];
 
         if ($isAjax) {
-            // Jika request AJAX, hanya return bagian tabel
+
             return view('pegawai/izin/_table', $data);
         }
 
@@ -72,20 +72,20 @@ class Izin extends BaseController
      */
     public function store()
     {
-        // Validasi input
+
         $rules = [
             'tanggal_izin' => 'required',
             'jenis_izin' => 'required',
             'keterangan' => 'required',
         ];
 
-        // Jika ada file yang diupload, validasi file tersebut
+
         $bukti = $this->request->getFile('bukti');
         if ($bukti && $bukti->isValid()) {
             $rules['bukti'] = 'max_size[bukti,2048]|mime_in[bukti,image/png,image/jpg,image/jpeg,application/pdf]';
         }
 
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->isAJAX();
 
         if (!$this->validate($rules)) {
@@ -99,7 +99,7 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Dapatkan ID pegawai dari user yang login
+
         $userId = $this->session->get('user_id');
         $pegawai = $this->pegawaiModel->getPegawaiByUserId($userId);
 
@@ -113,16 +113,16 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('error', 'Data pegawai tidak ditemukan.');
         }
 
-        // Dapatkan tanggal yang dipilih
+
         $tanggalIzin = $this->request->getPost('tanggal_izin');
         $selectedDatesArray = explode(',', $tanggalIzin);
 
-        // Bersihkan array dari nilai kosong
+
         $selectedDatesArray = array_filter($selectedDatesArray, function ($date) {
             return !empty(trim($date));
         });
 
-        // Validasi tanggal
+
         if (empty($selectedDatesArray)) {
             if ($isAjax) {
                 return $this->response->setJSON([
@@ -134,7 +134,7 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('error', 'Tanggal izin harus dipilih.');
         }
 
-        // Validasi maksimal 3 hari
+
         if (count($selectedDatesArray) > 3) {
             if ($isAjax) {
                 return $this->response->setJSON([
@@ -146,10 +146,10 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('error', 'Maksimal 3 hari yang dapat dipilih.');
         }
 
-        // Urutkan tanggal
+
         sort($selectedDatesArray);
 
-        // NONAKTIFKAN validasi tanggal berurutan
+
         $isConsecutive = true; // Anggap selalu berurutan
 
         $buktiName = '';
@@ -160,33 +160,33 @@ class Izin extends BaseController
             $buktiName = $newName;
         }
 
-        // Generate ID izin
+
         $idIzin = $this->izinModel->generateIdIzin();
 
         try {
-            // Bersihkan array dari nilai kosong dan trim spasi
+
             $selectedDatesArray = array_map('trim', $selectedDatesArray);
             $selectedDatesArray = array_filter($selectedDatesArray, function ($date) {
                 return !empty($date);
             });
 
-            // Urutkan tanggal yang dipilih dan simpan sebagai array baru
+
             sort($selectedDatesArray);
 
-            // Debug tanggal yang dipilih
+
             log_message('debug', 'Tanggal yang dipilih (setelah sort): ' . implode(', ', $selectedDatesArray));
 
-            // Ambil tanggal terawal dan terakhir
+
             $tanggalMulai = reset($selectedDatesArray); // Tanggal pertama (terawal)
             $tanggalSelesai = end($selectedDatesArray);  // Tanggal terakhir (terakhir)
 
-            // Debug tanggal mulai dan selesai
+
             log_message('debug', 'Tanggal mulai: ' . $tanggalMulai . ', Tanggal selesai: ' . $tanggalSelesai);
 
-            // Reset pointer array untuk penggunaan selanjutnya
+
             reset($selectedDatesArray);
 
-            // Simpan data izin
+
             $data = [
                 'idizin' => $idIzin,
                 'pegawai_id' => $pegawai['idpegawai'],
@@ -210,7 +210,7 @@ class Izin extends BaseController
                 }
                 return redirect()->to('pegawai/izin')->with('success', 'Pengajuan izin berhasil disimpan.');
             } else {
-                // Jika gagal, hapus file yang sudah diupload
+
                 if ($buktiName && file_exists(ROOTPATH . 'public/uploads/izin/' . $buktiName)) {
                     unlink(ROOTPATH . 'public/uploads/izin/' . $buktiName);
                 }
@@ -224,7 +224,7 @@ class Izin extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Gagal menyimpan pengajuan izin: ' . implode(', ', $this->izinModel->errors()));
             }
         } catch (\Exception $e) {
-            // Jika terjadi error, hapus file yang sudah diupload
+
             if ($buktiName && file_exists(ROOTPATH . 'public/uploads/izin/' . $buktiName)) {
                 unlink(ROOTPATH . 'public/uploads/izin/' . $buktiName);
             }
@@ -249,10 +249,10 @@ class Izin extends BaseController
         $userId = $this->session->get('user_id');
         $pegawai = $this->pegawaiModel->getPegawaiByUserId($userId);
 
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->getGet('ajax') == 1;
 
-        // Log untuk debugging
+
         log_message('debug', "IZIN SHOW: ID={$id}, AJAX={$isAjax}");
 
         if (!$pegawai) {
@@ -268,12 +268,12 @@ class Izin extends BaseController
 
         log_message('debug', "IZIN SHOW: Pegawai ditemukan dengan ID={$pegawai['idpegawai']}");
 
-        // Cek jika ID berupa kode IZN (bukan ID numeric)
+
         if (is_numeric($id)) {
             $izin = $this->izinModel->find($id);
             log_message('debug', "IZIN SHOW: Mencari izin dengan ID numeric {$id}");
         } else {
-            // Cari berdasarkan idizin (kode IZN)
+
             $izin = $this->izinModel->where('idizin', $id)->first();
             log_message('debug', "IZIN SHOW: Mencari izin dengan ID string {$id}");
         }
@@ -284,7 +284,7 @@ class Izin extends BaseController
             log_message('error', "IZIN SHOW: Izin tidak ditemukan dengan ID={$id}");
         }
 
-        // Pastikan izin milik pegawai yang sedang login
+
         if (!$izin || $izin['pegawai_id'] !== $pegawai['idpegawai']) {
             log_message('error', "IZIN SHOW: Izin tidak ditemukan atau bukan milik pegawai ini. ID Izin={$id}, ID Pegawai={$pegawai['idpegawai']}");
             if ($isAjax) {
@@ -325,15 +325,15 @@ class Izin extends BaseController
             return redirect()->to('pegawai/dashboard')->with('error', 'Data pegawai tidak ditemukan.');
         }
 
-        // Cek jika ID berupa kode IZN (bukan ID numeric)
+
         if (is_numeric($id)) {
             $izin = $this->izinModel->find($id);
         } else {
-            // Cari berdasarkan idizin (kode IZN)
+
             $izin = $this->izinModel->where('idizin', $id)->first();
         }
 
-        // Pastikan izin milik pegawai yang sedang login dan belum disetujui
+
         if (!$izin || $izin['pegawai_id'] !== $pegawai['idpegawai']) {
             return redirect()->to('pegawai/izin')->with('error', 'Data izin tidak ditemukan.');
         }
@@ -342,14 +342,14 @@ class Izin extends BaseController
             return redirect()->to('pegawai/izin')->with('error', 'Hanya pengajuan dengan status menunggu yang dapat diedit.');
         }
 
-        // Gunakan selected_dates jika tersedia, jika tidak buat dari tanggal mulai dan selesai
+
         $selectedDates = [];
 
         if (!empty($izin['selected_dates'])) {
-            // Gunakan tanggal yang tersimpan di kolom selected_dates
+
             $selectedDates = explode(',', $izin['selected_dates']);
         } else {
-            // Format tanggal menjadi array untuk flatpickr dari tanggal mulai dan selesai
+
             $tanggalMulai = new \DateTime($izin['tanggalmulaiizin']);
             $tanggalSelesai = new \DateTime($izin['tanggalselesaiizin']);
             $interval = $tanggalMulai->diff($tanggalSelesai);
@@ -378,20 +378,20 @@ class Izin extends BaseController
      */
     public function update($id)
     {
-        // Validasi input
+
         $rules = [
             'tanggal_izin' => 'required',
             'jenis_izin' => 'required',
             'keterangan' => 'required',
         ];
 
-        // Cek apakah ada file yang diupload
+
         $bukti = $this->request->getFile('bukti');
         if ($bukti && $bukti->isValid() && !$bukti->hasMoved()) {
             $rules['bukti'] = 'max_size[bukti,2048]|mime_in[bukti,image/png,image/jpg,image/jpeg,application/pdf]';
         }
 
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->isAJAX();
 
         if (!$this->validate($rules)) {
@@ -405,7 +405,7 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Dapatkan ID pegawai dari user yang login
+
         $userId = $this->session->get('user_id');
         $pegawai = $this->pegawaiModel->getPegawaiByUserId($userId);
 
@@ -419,16 +419,16 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('error', 'Data pegawai tidak ditemukan.');
         }
 
-        // Cari data izin yang akan diupdate
-        // Cek jika ID berupa kode IZN (bukan ID numeric)
+
+
         if (is_numeric($id)) {
             $izin = $this->izinModel->find($id);
         } else {
-            // Cari berdasarkan idizin (kode IZN)
+
             $izin = $this->izinModel->where('idizin', $id)->first();
         }
 
-        // Pastikan izin milik pegawai yang sedang login dan belum disetujui
+
         if (!$izin || $izin['pegawai_id'] !== $pegawai['idpegawai']) {
             if ($isAjax) {
                 return $this->response->setJSON([
@@ -449,16 +449,16 @@ class Izin extends BaseController
             return redirect()->to('pegawai/izin')->with('error', 'Hanya pengajuan dengan status menunggu yang dapat diedit.');
         }
 
-        // Dapatkan tanggal yang dipilih
+
         $tanggalIzin = $this->request->getPost('tanggal_izin');
         $selectedDatesArray = explode(',', $tanggalIzin);
 
-        // Bersihkan array dari nilai kosong
+
         $selectedDatesArray = array_filter($selectedDatesArray, function ($date) {
             return !empty(trim($date));
         });
 
-        // Validasi tanggal
+
         if (empty($selectedDatesArray)) {
             if ($isAjax) {
                 return $this->response->setJSON([
@@ -470,7 +470,7 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('error', 'Tanggal izin harus dipilih.');
         }
 
-        // Validasi maksimal 3 hari
+
         if (count($selectedDatesArray) > 3) {
             if ($isAjax) {
                 return $this->response->setJSON([
@@ -482,37 +482,37 @@ class Izin extends BaseController
             return redirect()->back()->withInput()->with('error', 'Maksimal 3 hari yang dapat dipilih.');
         }
 
-        // Urutkan tanggal
+
         sort($selectedDatesArray);
 
-        // NONAKTIFKAN validasi tanggal berurutan
+
         $isConsecutive = true; // Anggap selalu berurutan
 
 
 
-        // Bersihkan array dari nilai kosong dan trim spasi
+
         $selectedDatesArray = array_map('trim', $selectedDatesArray);
         $selectedDatesArray = array_filter($selectedDatesArray, function ($date) {
             return !empty($date);
         });
 
-        // Urutkan tanggal yang dipilih dan simpan sebagai array baru
+
         sort($selectedDatesArray);
 
-        // Debug tanggal yang dipilih
+
         log_message('debug', 'UPDATE: Tanggal yang dipilih (setelah sort): ' . implode(', ', $selectedDatesArray));
 
-        // Ambil tanggal terawal dan terakhir
+
         $tanggalMulai = reset($selectedDatesArray); // Tanggal pertama (terawal)
         $tanggalSelesai = end($selectedDatesArray);  // Tanggal terakhir (terakhir)
 
-        // Debug tanggal mulai dan selesai
+
         log_message('debug', 'UPDATE: Tanggal mulai: ' . $tanggalMulai . ', Tanggal selesai: ' . $tanggalSelesai);
 
-        // Reset pointer array untuk penggunaan selanjutnya
+
         reset($selectedDatesArray);
 
-        // Update data izin
+
         $data = [
             'tanggalmulaiizin' => $tanggalMulai, // Gunakan tanggal terawal sebagai tanggal mulai
             'tanggalselesaiizin' => $tanggalSelesai, // Gunakan tanggal terakhir sebagai tanggal selesai
@@ -521,9 +521,9 @@ class Izin extends BaseController
             'alasan' => $this->request->getPost('keterangan'),
         ];
 
-        // Upload file bukti jika ada
+
         if ($bukti && $bukti->isValid() && !$bukti->hasMoved()) {
-            // Hapus file lama jika ada
+
             if (!empty($izin['lampiran']) && file_exists(ROOTPATH . 'public/uploads/izin/' . $izin['lampiran'])) {
                 unlink(ROOTPATH . 'public/uploads/izin/' . $izin['lampiran']);
             }
@@ -578,16 +578,16 @@ class Izin extends BaseController
             return redirect()->to('pegawai/dashboard')->with('error', 'Data pegawai tidak ditemukan.');
         }
 
-        // Cari data izin yang akan dihapus
-        // Cek jika ID berupa kode IZN (bukan ID numeric)
+
+
         if (is_numeric($id)) {
             $izin = $this->izinModel->find($id);
         } else {
-            // Cari berdasarkan idizin (kode IZN)
+
             $izin = $this->izinModel->where('idizin', $id)->first();
         }
 
-        // Pastikan izin milik pegawai yang sedang login dan belum disetujui
+
         if (!$izin || $izin['pegawai_id'] !== $pegawai['idpegawai']) {
             return redirect()->to('pegawai/izin')->with('error', 'Data izin tidak ditemukan.');
         }
@@ -596,7 +596,7 @@ class Izin extends BaseController
             return redirect()->to('pegawai/izin')->with('error', 'Hanya pengajuan dengan status menunggu yang dapat dihapus.');
         }
 
-        // Hapus file lampiran jika ada
+
         if (!empty($izin['lampiran'])) {
             $filePath = ROOTPATH . 'public/uploads/izin/' . $izin['lampiran'];
             if (file_exists($filePath)) {
@@ -604,7 +604,7 @@ class Izin extends BaseController
             }
         }
 
-        // Hapus data izin
+
         if ($this->izinModel->delete($izin['idizin'])) {
             return redirect()->to('pegawai/izin')->with('success', 'Pengajuan izin berhasil dihapus.');
         } else {

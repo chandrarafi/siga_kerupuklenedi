@@ -40,35 +40,35 @@ class Gaji extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $bulan = $request->getGet('bulan') ?? date('m');
         $tahun = $request->getGet('tahun') ?? date('Y');
         $pegawaiId = $request->getGet('pegawai_id') ?? '';
         $status = $request->getGet('status') ?? '';
         $search = $request->getGet('search') ?? '';
 
-        // Query builder
+
         $builder = $this->db->table('gaji');
         $builder->select('gaji.*, pegawai.namapegawai, pegawai.nik');
         $builder->join('pegawai', 'pegawai.idpegawai = gaji.pegawai_id');
 
-        // Filter berdasarkan periode
+
         if ($bulan && $tahun) {
             $periode = $bulan . '-' . $tahun;
             $builder->where('gaji.periode', $periode);
         }
 
-        // Filter berdasarkan pegawai
+
         if ($pegawaiId) {
             $builder->where('pegawai_id', $pegawaiId);
         }
 
-        // Filter berdasarkan status
+
         if ($status) {
             $builder->where('gaji.status', $status);
         }
 
-        // Filter berdasarkan pencarian
+
         if ($search) {
             $builder->groupStart()
                 ->like('gaji.idgaji', $search)
@@ -117,7 +117,7 @@ class Gaji extends BaseController
      */
     public function hitungGaji()
     {
-        // Tambahkan header untuk mencegah caching
+
         $this->response->setHeader('Cache-Control', 'no-store, max-age=0, no-cache, must-revalidate');
         $this->response->setHeader('Pragma', 'no-cache');
         $this->response->setHeader('Content-Type', 'application/json');
@@ -136,13 +136,13 @@ class Gaji extends BaseController
 
             $periode = $bulan . '-' . $tahun;
 
-            // Cek apakah gaji untuk periode ini sudah ada
+
             $existingGaji = $this->gajiModel->where('pegawai_id', $pegawaiId)
                 ->where('periode', $periode)
                 ->first();
 
             if ($existingGaji) {
-                // Ambil nama pegawai
+
                 $pegawai = $this->db->table('pegawai')
                     ->select('namapegawai')
                     ->where('idpegawai', $pegawaiId)
@@ -151,7 +151,7 @@ class Gaji extends BaseController
 
                 $namaPegawai = $pegawai ? $pegawai['namapegawai'] : 'Pegawai';
 
-                // Konversi format bulan dari angka ke nama bulan
+
                 $bulanNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                 $bulanText = $bulanNames[intval($bulan) - 1];
 
@@ -161,7 +161,7 @@ class Gaji extends BaseController
                 ])->setStatusCode(409); // Conflict
             }
 
-            // Hitung gaji
+
             $hasilHitung = $this->gajiModel->hitungGaji($pegawaiId, $periode);
 
             if (!$hasilHitung['status']) {
@@ -183,10 +183,10 @@ class Gaji extends BaseController
      */
     public function store()
     {
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->isAJAX();
 
-        // Validasi input
+
         $rules = [
             'pegawai_id' => 'required',
             'bulan' => 'required',
@@ -210,16 +210,16 @@ class Gaji extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Buat periode dari bulan dan tahun
+
         $bulan = $this->request->getPost('bulan');
         $tahun = $this->request->getPost('tahun');
         $periode = $bulan . '-' . $tahun;
 
-        // Generate ID gaji dan No Slip
+
         $idgaji = $this->gajiModel->generateIdGaji();
         $noslip = $this->gajiModel->generateNoSlip($periode);
 
-        // Simpan data
+
         $data = [
             'idgaji' => $idgaji,
             'noslip' => $noslip,
@@ -260,10 +260,10 @@ class Gaji extends BaseController
      */
     public function show($id)
     {
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->getGet('ajax') == 1;
 
-        // Gunakan getGajiWithPegawai karena sudah mendukung pencarian berdasarkan ID atau idgaji
+
         $gaji = $this->gajiModel->getGajiWithPegawai($id);
 
         if (!$gaji) {
@@ -276,11 +276,11 @@ class Gaji extends BaseController
             return redirect()->to('admin/gaji')->with('error', 'Data gaji tidak ditemukan.');
         }
 
-        // Ambil detail komponen gaji
+
         $periode = $gaji['periode'];
         list($bulan, $tahun) = explode('-', $periode);
 
-        // Ambil data jabatan dan gaji pokok
+
         $dataPegawai = $this->db->table('pegawai')
             ->select('pegawai.*, jabatan.namajabatan as nama_jabatan, jabatan.gajipokok, jabatan.tunjangan, bagian.namabagian')
             ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid')
@@ -289,7 +289,7 @@ class Gaji extends BaseController
             ->get()
             ->getRowArray();
 
-        // Ambil detail absensi
+
         $detailAbsensi = $this->db->table('absensi')
             ->where('idpegawai', $gaji['pegawai_id'])
             ->where('MONTH(tanggal)', $bulan)
@@ -298,7 +298,7 @@ class Gaji extends BaseController
             ->get()
             ->getResultArray();
 
-        // Hitung rekap absensi
+
         $rekapAbsensi = [
             'hadir' => 0,
             'izin' => 0,
@@ -323,7 +323,7 @@ class Gaji extends BaseController
             }
         }
 
-        // Ambil detail lembur
+
         $detailLembur = $this->db->table('lembur')
             ->where('pegawai_id', $gaji['pegawai_id'])
             ->where('MONTH(tanggallembur)', $bulan)
@@ -332,13 +332,13 @@ class Gaji extends BaseController
             ->get()
             ->getResultArray();
 
-        // Hitung total durasi lembur dalam menit dan jam
+
         $totalMenitLembur = 0;
         foreach ($detailLembur as &$lembur) {
             $jammulai = strtotime($lembur['jammulai']);
             $jamselesai = strtotime($lembur['jamselesai']);
 
-            // Jika jamselesai lebih kecil dari jammulai, berarti melewati tengah malam
+
             if ($jamselesai < $jammulai) {
                 $jamselesai += 86400; // Tambah 24 jam
             }
@@ -355,20 +355,20 @@ class Gaji extends BaseController
 
         $totalJamLembur = $totalMenitLembur / 60;
 
-        // Rumus baru perhitungan gaji
+
         $gajiPokok = $dataPegawai['gajipokok'] ?? 0;
 
-        // Tunjangan tergantung kehadiran (per hari)
+
         $hariKerjaNormal = 30;
         $tunjanganPenuh = $dataPegawai['tunjangan'] ?? 0;
         $tunjanganPerHari = $tunjanganPenuh / $hariKerjaNormal;
         $tunjangan = $tunjanganPerHari * $gaji['totalabsen'];
 
-        // Lembur dengan tarif tetap Rp 20.000 per jam
+
         $tarifLembur = 20000;
         $upahLembur = $gaji['totallembur'] * $tarifLembur;
 
-        // Hitung total gaji tanpa potongan
+
         $gajiBersih = $gajiPokok + $tunjangan + $upahLembur;
 
         $komponenGaji = [
@@ -433,10 +433,10 @@ class Gaji extends BaseController
      */
     public function update($id)
     {
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->isAJAX();
 
-        // Validasi input
+
         $rules = [
             'metodepembayaran' => 'required',
             'status' => 'required'
@@ -453,11 +453,11 @@ class Gaji extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Cek jika ID berupa kode GJI (bukan ID numeric)
+
         if (is_numeric($id)) {
             $gaji = $this->gajiModel->find($id);
         } else {
-            // Cari berdasarkan idgaji (kode GJI)
+
             $gaji = $this->gajiModel->where('idgaji', $id)->first();
         }
 
@@ -471,7 +471,7 @@ class Gaji extends BaseController
             return redirect()->to('admin/gaji')->with('error', 'Data gaji tidak ditemukan.');
         }
 
-        // Update data
+
         $data = [
             'metodepembayaran' => $this->request->getPost('metodepembayaran'),
             'status' => $this->request->getPost('status'),
@@ -503,14 +503,14 @@ class Gaji extends BaseController
      */
     public function delete($id)
     {
-        // Cek jika request adalah POST atau GET
+
         $isPost = $this->request->getMethod() === 'post';
 
-        // Cek jika ID berupa kode GJI (bukan ID numeric)
+
         if (is_numeric($id)) {
             $gaji = $this->gajiModel->find($id);
         } else {
-            // Cari berdasarkan idgaji (kode GJI)
+
             $gaji = $this->gajiModel->where('idgaji', $id)->first();
         }
 
@@ -532,21 +532,21 @@ class Gaji extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $bulan = $request->getGet('bulan') ?? date('m');
         $tahun = $request->getGet('tahun') ?? date('Y');
         $status = $request->getGet('status') ?? '';
 
         $periode = $bulan . '-' . $tahun;
 
-        // Query builder
+
         $builder = $this->db->table('gaji');
         $builder->select('gaji.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
         $builder->join('pegawai', 'pegawai.idpegawai = gaji.pegawai_id');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
         $builder->where('gaji.periode', $periode);
 
-        // Filter berdasarkan status
+
         if ($status) {
             $builder->where('gaji.status', $status);
         }
@@ -554,7 +554,7 @@ class Gaji extends BaseController
         $builder->orderBy('pegawai.namapegawai', 'ASC');
         $gaji_list = $builder->get()->getResultArray();
 
-        // Ambil daftar pegawai untuk filter
+
         $pegawai_list = $this->pegawaiModel->orderBy('namapegawai', 'ASC')->findAll();
 
         $data = [
@@ -579,21 +579,21 @@ class Gaji extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $bulan = $request->getGet('bulan') ?? date('m');
         $tahun = $request->getGet('tahun') ?? date('Y');
         $status = $request->getGet('status') ?? '';
 
         $periode = $bulan . '-' . $tahun;
 
-        // Query builder
+
         $builder = $this->db->table('gaji');
         $builder->select('gaji.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
         $builder->join('pegawai', 'pegawai.idpegawai = gaji.pegawai_id');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
         $builder->where('gaji.periode', $periode);
 
-        // Filter berdasarkan status
+
         if ($status) {
             $builder->where('gaji.status', $status);
         }
@@ -601,7 +601,7 @@ class Gaji extends BaseController
         $builder->orderBy('pegawai.namapegawai', 'ASC');
         $gaji_list = $builder->get()->getResultArray();
 
-        // Hitung total gaji
+
         $total_gaji = 0;
         foreach ($gaji_list as $gaji) {
             $total_gaji += $gaji['gajibersih'];
@@ -628,21 +628,21 @@ class Gaji extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $bulan = $request->getGet('bulan') ?? date('m');
         $tahun = $request->getGet('tahun') ?? date('Y');
         $status = $request->getGet('status') ?? '';
 
         $periode = $bulan . '-' . $tahun;
 
-        // Query builder
+
         $builder = $this->db->table('gaji');
         $builder->select('gaji.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan');
         $builder->join('pegawai', 'pegawai.idpegawai = gaji.pegawai_id');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
         $builder->where('gaji.periode', $periode);
 
-        // Filter berdasarkan status
+
         if ($status) {
             $builder->where('gaji.status', $status);
         }
@@ -650,10 +650,10 @@ class Gaji extends BaseController
         $builder->orderBy('pegawai.namapegawai', 'ASC');
         $gaji_list = $builder->get()->getResultArray();
 
-        // Ambil logo perusahaan
+
         $logoPath = ROOTPATH . 'public/image/logo.png';
 
-        // Konversi logo ke base64 jika ada
+
         if (file_exists($logoPath)) {
             $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
             $logoData = file_get_contents($logoPath);
@@ -662,7 +662,7 @@ class Gaji extends BaseController
             $logoBase64 = '';
         }
 
-        // Format nama bulan
+
         $bulan_list = [
             '01' => 'Januari',
             '02' => 'Februari',
@@ -691,16 +691,16 @@ class Gaji extends BaseController
             'logo' => $logoBase64
         ];
 
-        // Load PDF helper
+
         $pdfHelper = new \App\Helpers\PdfHelper();
 
-        // Generate PDF
+
         $html = view('admin/gaji/pdf_template', $data);
 
-        // Filename dengan timestamp
+
         $filename = 'laporan_gaji_' . $periode . '_' . date('Ymd_His') . '.pdf';
 
-        // Generate PDF
+
         return $pdfHelper->generate($html, $filename, 'A4', 'landscape', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);
@@ -711,18 +711,18 @@ class Gaji extends BaseController
      */
     public function slip($id)
     {
-        // Gunakan getGajiWithPegawai karena sudah mendukung pencarian berdasarkan ID atau idgaji
+
         $gaji = $this->gajiModel->getGajiWithPegawai($id);
 
         if (!$gaji) {
             return redirect()->to('admin/gaji')->with('error', 'Data gaji tidak ditemukan.');
         }
 
-        // Ambil detail komponen gaji
+
         $periode = $gaji['periode'];
         list($bulan, $tahun) = explode('-', $periode);
 
-        // Ambil data jabatan dan gaji pokok
+
         $dataPegawai = $this->db->table('pegawai')
             ->select('pegawai.*, jabatan.namajabatan as nama_jabatan, jabatan.gajipokok, jabatan.tunjangan, bagian.namabagian')
             ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid')
@@ -731,7 +731,7 @@ class Gaji extends BaseController
             ->get()
             ->getRowArray();
 
-        // Ambil detail lembur
+
         $detailLembur = $this->db->table('lembur')
             ->where('pegawai_id', $gaji['pegawai_id'])
             ->where('MONTH(tanggallembur)', $bulan)
@@ -740,13 +740,13 @@ class Gaji extends BaseController
             ->get()
             ->getResultArray();
 
-        // Hitung total durasi lembur dalam menit dan jam
+
         $totalMenitLembur = 0;
         foreach ($detailLembur as &$lembur) {
             $jammulai = strtotime($lembur['jammulai']);
             $jamselesai = strtotime($lembur['jamselesai']);
 
-            // Jika jamselesai lebih kecil dari jammulai, berarti melewati tengah malam
+
             if ($jamselesai < $jammulai) {
                 $jamselesai += 86400; // Tambah 24 jam
             }
@@ -763,20 +763,20 @@ class Gaji extends BaseController
 
         $totalJamLembur = $totalMenitLembur / 60;
 
-        // Rumus baru perhitungan gaji
+
         $gajiPokok = $dataPegawai['gajipokok'] ?? 0;
 
-        // Tunjangan tergantung kehadiran (per hari)
+
         $hariKerjaNormal = 30;
         $tunjanganPenuh = $dataPegawai['tunjangan'] ?? 0;
         $tunjanganPerHari = $tunjanganPenuh / $hariKerjaNormal;
         $tunjangan = $tunjanganPerHari * $gaji['totalabsen'];
 
-        // Lembur dengan tarif tetap Rp 20.000 per jam
+
         $tarifLembur = 20000;
         $upahLembur = $gaji['totallembur'] * $tarifLembur;
 
-        // Hitung total gaji tanpa potongan
+
         $gajiBruto = $gajiPokok + $tunjangan + $upahLembur;
 
         $komponenGaji = [
@@ -796,10 +796,10 @@ class Gaji extends BaseController
             'tarif_lembur' => $tarifLembur
         ];
 
-        // Ambil logo perusahaan
+
         $logoPath = ROOTPATH . 'public/image/logo.png';
 
-        // Konversi logo ke base64 jika ada
+
         if (file_exists($logoPath)) {
             $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
             $logoData = file_get_contents($logoPath);
@@ -821,16 +821,16 @@ class Gaji extends BaseController
             'total_upah_lembur' => $upahLembur
         ];
 
-        // Load PDF helper
+
         $pdfHelper = new \App\Helpers\PdfHelper();
 
-        // Generate PDF
+
         $html = view('admin/gaji/slip_template', $data);
 
-        // Filename dengan timestamp
+
         $filename = 'slip_gaji_' . $gaji['noslip'] . '_' . date('Ymd_His') . '.pdf';
 
-        // Generate PDF
+
         return $pdfHelper->generate($html, $filename, 'A4', 'portrait', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);
@@ -841,11 +841,11 @@ class Gaji extends BaseController
      */
     public function processPayment($id)
     {
-        // Cek jika ID berupa kode GJI (bukan ID numeric)
+
         if (is_numeric($id)) {
             $gaji = $this->gajiModel->find($id);
         } else {
-            // Cari berdasarkan idgaji (kode GJI)
+
             $gaji = $this->gajiModel->where('idgaji', $id)->first();
         }
 
@@ -853,7 +853,7 @@ class Gaji extends BaseController
             return redirect()->to('admin/gaji')->with('error', 'Data gaji tidak ditemukan.');
         }
 
-        // Update status menjadi 'paid'
+
         $data = [
             'status' => 'paid',
             'keterangan' => 'Pembayaran diproses pada ' . date('d-m-Y H:i:s')
@@ -871,11 +871,11 @@ class Gaji extends BaseController
      */
     public function cancelPayment($id)
     {
-        // Cek jika ID berupa kode GJI (bukan ID numeric)
+
         if (is_numeric($id)) {
             $gaji = $this->gajiModel->find($id);
         } else {
-            // Cari berdasarkan idgaji (kode GJI)
+
             $gaji = $this->gajiModel->where('idgaji', $id)->first();
         }
 
@@ -883,7 +883,7 @@ class Gaji extends BaseController
             return redirect()->to('admin/gaji')->with('error', 'Data gaji tidak ditemukan.');
         }
 
-        // Update status menjadi 'cancelled'
+
         $data = [
             'status' => 'cancelled',
             'keterangan' => 'Pembayaran dibatalkan pada ' . date('d-m-Y H:i:s')
@@ -901,7 +901,7 @@ class Gaji extends BaseController
      */
     public function getPegawai()
     {
-        // Cek apakah request AJAX
+
         if (!$this->request->isAJAX()) {
             return $this->response->setStatusCode(403)->setJSON(['error' => 'Forbidden']);
         }
@@ -917,7 +917,7 @@ class Gaji extends BaseController
             $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid');
             $builder->join('bagian', 'bagian.idbagian = jabatan.bagianid');
 
-            // Tambahkan filter pencarian
+
             if ($search) {
                 $builder->groupStart()
                     ->like('pegawai.namapegawai', $search)
@@ -927,13 +927,13 @@ class Gaji extends BaseController
                     ->groupEnd();
             }
 
-            // Hitung total data
+
             $total = $builder->countAllResults(false);
 
-            // Ambil data dengan limit dan offset
+
             $pegawai_list = $builder->limit($limit, $offset)->get()->getResultArray();
 
-            // Format data untuk select2
+
             $results = [];
             foreach ($pegawai_list as $pegawai) {
                 $results[] = [

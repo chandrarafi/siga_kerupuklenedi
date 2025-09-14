@@ -20,14 +20,14 @@ class BagianModel extends Model
     protected array $casts = [];
     protected array $castHandlers = [];
 
-    // Dates
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = '';
 
-    // Validation
+
     protected $validationRules      = [
         'namabagian' => 'required|min_length[3]|max_length[100]',
     ];
@@ -41,7 +41,7 @@ class BagianModel extends Model
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 
-    // Callbacks
+
     protected $allowCallbacks = true;
     protected $beforeInsert   = [];
     protected $afterInsert    = [];

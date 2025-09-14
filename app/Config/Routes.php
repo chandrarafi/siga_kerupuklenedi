@@ -19,10 +19,10 @@ $routes->get('auth/logout', 'Auth::logout');
 
 // Admin Routes
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
-    $routes->get('/', 'Admin::index', ['filter' => 'role:admin,manager']);
+    $routes->get('/', 'Admin::index', ['filter' => 'role:admin,pimpinan']);
 
     // User Management (hanya admin)
-    $routes->group('', ['filter' => 'role:admin'], function ($routes) {
+    $routes->group('', ['filter' => 'role:admin,pimpinan'], function ($routes) {
         $routes->get('users', 'Admin::users');
         $routes->get('getUsers', 'Admin::getUsers');
         $routes->get('getUser/(:num)', 'Admin::getUser/$1');

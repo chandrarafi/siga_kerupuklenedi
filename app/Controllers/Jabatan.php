@@ -33,7 +33,7 @@ class Jabatan extends BaseController
         $dtpostData = $postData;
         $response = array();
 
-        ## Read value
+
         $draw = $dtpostData['draw'];
         $start = $dtpostData['start'];
         $rowperpage = $dtpostData['length']; // Rows display per page
@@ -42,15 +42,15 @@ class Jabatan extends BaseController
         $columnSortOrder = $dtpostData['order'][0]['dir']; // asc or desc
         $searchValue = $dtpostData['search']['value']; // Search value
 
-        ## Custom query for getting data with join
+
         $builder = $this->jabatanModel->db->table('jabatan');
         $builder->select('jabatan.*, bagian.namabagian');
         $builder->join('bagian', 'bagian.idbagian = jabatan.bagianid');
 
-        ## Total number of records without filtering
+
         $totalRecords = $builder->countAllResults(false);
 
-        ## Total number of records with filtering
+
         if ($searchValue != '') {
             $builder->groupStart()
                 ->like('jabatan.namajabatan', $searchValue)
@@ -59,7 +59,7 @@ class Jabatan extends BaseController
         }
         $totalRecordwithFilter = $builder->countAllResults(false);
 
-        ## Fetch records
+
         if ($columnName === 'namabagian') {
             $builder->orderBy($columnName, $columnSortOrder);
         } else {
@@ -85,7 +85,7 @@ class Jabatan extends BaseController
             );
         }
 
-        ## Response
+
         $response = array(
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
@@ -113,7 +113,7 @@ class Jabatan extends BaseController
         $gajipokok = $this->request->getPost('gajipokok');
         $tunjangan = $this->request->getPost('tunjangan');
 
-        // Pastikan nilai adalah numerik
+
         $gajipokok = is_numeric($gajipokok) ? $gajipokok : 0;
         $tunjangan = is_numeric($tunjangan) ? $tunjangan : 0;
 
@@ -164,7 +164,7 @@ class Jabatan extends BaseController
         $gajipokok = $this->request->getPost('gajipokok');
         $tunjangan = $this->request->getPost('tunjangan');
 
-        // Pastikan nilai adalah numerik
+
         $gajipokok = is_numeric($gajipokok) ? $gajipokok : 0;
         $tunjangan = is_numeric($tunjangan) ? $tunjangan : 0;
 
@@ -211,19 +211,19 @@ class Jabatan extends BaseController
 
     public function report()
     {
-        // Get filter parameters
+
         $bagianId = $this->request->getGet('bagian');
         $isAjax = $this->request->getGet('ajax');
 
-        // Get all bagian for filter dropdown
+
         $bagianList = $this->bagianModel->findAll();
 
-        // Get all jabatan data with join to bagian
+
         $builder = $this->jabatanModel->db->table('jabatan');
         $builder->select('jabatan.*, bagian.namabagian');
         $builder->join('bagian', 'bagian.idbagian = jabatan.bagianid');
 
-        // Apply filters if provided
+
         if (!empty($bagianId)) {
             $builder->where('bagian.idbagian', $bagianId);
         }
@@ -231,7 +231,7 @@ class Jabatan extends BaseController
         $builder->orderBy('jabatan.namajabatan', 'ASC');
         $jabatan = $builder->get()->getResultArray();
 
-        // Get filter name for display
+
         $bagian_name = '';
 
         if (!empty($bagianId)) {
@@ -253,17 +253,17 @@ class Jabatan extends BaseController
             'bagian_name' => $bagian_name
         ];
 
-        // Jika request untuk cetak PDF
+
         if ($this->request->getGet('print') == 'true') {
             return $this->generatePDF($data);
         }
 
-        // Jika request AJAX, kembalikan hanya bagian laporan
+
         if ($isAjax) {
             return view('admin/jabatan/report_partial', $data);
         }
 
-        // Jika tidak, tampilkan dengan layout admin
+
         return view('admin/jabatan/report_preview', $data);
     }
 
@@ -272,27 +272,27 @@ class Jabatan extends BaseController
      */
     protected function generatePDF($data)
     {
-        // Tambahkan path logo
+
         $data['logo'] = ROOTPATH . 'public/image/logo.png';
 
-        // Jika logo tidak ada, gunakan placeholder
+
         if (!file_exists($data['logo'])) {
             $data['logo'] = '';
         } else {
-            // Convert logo to base64 for embedding in PDF
+
             $data['logo'] = 'data:image/png;base64,' . base64_encode(file_get_contents($data['logo']));
         }
 
-        // Load PDF helper
+
         $pdfHelper = new \App\Helpers\PdfHelper();
 
-        // Generate PDF
+
         $html = view('admin/jabatan/pdf_template', $data);
 
-        // Filename dengan timestamp
+
         $filename = 'laporan_jabatan_' . date('Ymd_His') . '.pdf';
 
-        // Generate PDF
+
         return $pdfHelper->generate($html, $filename, 'A4', 'portrait', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);

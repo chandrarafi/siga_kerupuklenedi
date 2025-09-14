@@ -26,11 +26,11 @@ class Izin extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $status = $request->getGet('status');
         $search = $request->getGet('search');
 
-        // Query builder
+
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
         $builder->select('
@@ -43,7 +43,7 @@ class Izin extends BaseController
         $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
-        // Filter berdasarkan status
+
         if ($status === 'pending') {
             $builder->groupStart()
                 ->where('statusizin IS NULL', null, false)
@@ -59,7 +59,7 @@ class Izin extends BaseController
                 ->where('keterangan_admin IS NOT NULL', null, false);
         }
 
-        // Filter berdasarkan pencarian
+
         if (!empty($search)) {
             $builder->groupStart()
                 ->like('izin.idizin', $search)
@@ -87,14 +87,14 @@ class Izin extends BaseController
      */
     public function show($id)
     {
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->getGet('ajax') == 1;
 
-        // Log untuk debugging
+
         log_message('debug', "ADMIN IZIN SHOW: ID={$id}, AJAX={$isAjax}");
 
         try {
-            // Gunakan getIzinWithPegawai karena sudah mendukung pencarian berdasarkan ID atau idizin
+
             $izin = $this->izinModel->getIzinWithPegawai($id);
 
             if (!$izin) {
@@ -142,17 +142,17 @@ class Izin extends BaseController
      */
     public function approve($id)
     {
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->isAJAX();
 
         log_message('debug', "ADMIN IZIN APPROVE: ID={$id}, AJAX={$isAjax}");
 
-        // Cek jika ID berupa kode IZN (bukan ID numeric)
+
         if (is_numeric($id)) {
             $izin = $this->izinModel->find($id);
             log_message('debug', "ADMIN IZIN APPROVE: Mencari izin dengan ID numeric {$id}");
         } else {
-            // Cari berdasarkan idizin (kode IZN)
+
             $izin = $this->izinModel->where('idizin', $id)->first();
             log_message('debug', "ADMIN IZIN APPROVE: Mencari izin dengan ID string {$id}");
         }
@@ -201,17 +201,17 @@ class Izin extends BaseController
      */
     public function reject($id)
     {
-        // Cek apakah request AJAX
+
         $isAjax = $this->request->isAJAX();
 
         log_message('debug', "ADMIN IZIN REJECT: ID={$id}, AJAX={$isAjax}");
 
-        // Cek jika ID berupa kode IZN (bukan ID numeric)
+
         if (is_numeric($id)) {
             $izin = $this->izinModel->find($id);
             log_message('debug', "ADMIN IZIN REJECT: Mencari izin dengan ID numeric {$id}");
         } else {
-            // Cari berdasarkan idizin (kode IZN)
+
             $izin = $this->izinModel->where('idizin', $id)->first();
             log_message('debug', "ADMIN IZIN REJECT: Mencari izin dengan ID string {$id}");
         }
@@ -275,13 +275,13 @@ class Izin extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $startDate = $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
         $endDate = $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
         $status = $request->getGet('status') ?? ''; // Default: semua status
         $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
 
-        // Ambil daftar pegawai untuk filter
+
         $pegawai_list = $this->pegawaiModel->orderBy('namapegawai', 'ASC')->findAll();
 
         $data = [
@@ -305,18 +305,18 @@ class Izin extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $tanggalAwal = $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
         $tanggalAkhir = $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
         $status = $request->getGet('status') ?? ''; // Default: semua status
         $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
 
-        // Ensure dates are in Y-m-d format for database comparison
+
         if (!empty($tanggalAwal)) {
-            // Check if the date is in a valid format
+
             $date = \DateTime::createFromFormat('Y-m-d', $tanggalAwal);
             if (!$date || $date->format('Y-m-d') !== $tanggalAwal) {
-                // Try to parse the date
+
                 $timestamp = strtotime($tanggalAwal);
                 if ($timestamp !== false) {
                     $tanggalAwal = date('Y-m-d', $timestamp);
@@ -325,10 +325,10 @@ class Izin extends BaseController
         }
 
         if (!empty($tanggalAkhir)) {
-            // Check if the date is in a valid format
+
             $date = \DateTime::createFromFormat('Y-m-d', $tanggalAkhir);
             if (!$date || $date->format('Y-m-d') !== $tanggalAkhir) {
-                // Try to parse the date
+
                 $timestamp = strtotime($tanggalAkhir);
                 if ($timestamp !== false) {
                     $tanggalAkhir = date('Y-m-d', $timestamp);
@@ -336,16 +336,16 @@ class Izin extends BaseController
             }
         }
 
-        // Query builder
+
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
         $builder->select('izin.*, pegawai.namapegawai, pegawai.nik, jabatan.namajabatan, izin.alasan');
         $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
-        // Filter berdasarkan tanggal (dengan pendekatan overlap)
+
         if (!empty($tanggalAwal) && !empty($tanggalAkhir)) {
-            // Mencari izin yang overlap dengan tanggal filter (tidak terlalu ketat)
+
             $builder->groupStart()
                 ->where('izin.created_at <=', $tanggalAkhir) // izin dimulai sebelum periode filter berakhir
                 ->where('izin.created_at >=', $tanggalAwal) // izin berakhir setelah periode filter dimulai
@@ -356,25 +356,25 @@ class Izin extends BaseController
             $builder->where('izin.created_at <=', $tanggalAkhir);
         }
 
-        // Filter berdasarkan status
+
         if ($status !== '') {
             $builder->where('statusizin', $status);
         }
 
-        // Filter berdasarkan pegawai
+
         if ($pegawaiId !== '') {
             $builder->where('pegawai_id', $pegawaiId);
         }
 
-        // Set default ordering
+
         $builder->orderBy('izin.created_at', 'DESC');
 
         $izinList = $builder->get()->getResultArray();
 
-        // Pastikan data pegawai ada
+
         foreach ($izinList as $key => $item) {
             if (empty($item['namapegawai'])) {
-                // Coba ambil data pegawai secara manual
+
                 $pegawai = $db->table('pegawai')
                     ->where('idpegawai', $item['pegawai_id'])
                     ->get()
@@ -385,9 +385,9 @@ class Izin extends BaseController
                 }
             }
 
-            // Perbaiki data jabatan jika tidak ada
+
             if (empty($item['namajabatan']) && !empty($item['pegawai_id'])) {
-                // Ambil data jabatan melalui pegawai
+
                 $jabatan = $db->table('pegawai')
                     ->select('jabatan.namajabatan')
                     ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left')
@@ -401,7 +401,7 @@ class Izin extends BaseController
             }
         }
 
-        // Hitung total izin
+
         $total_izin = count($izinList);
 
         $data = [
@@ -425,13 +425,13 @@ class Izin extends BaseController
     {
         $request = $this->request;
 
-        // Filter data
+
         $startDate = $request->getGet('start_date') ?? date('Y-m-01'); // Default: awal bulan ini
         $endDate = $request->getGet('end_date') ?? date('Y-m-d'); // Default: hari ini
         $status = $request->getGet('status') ?? ''; // Default: semua status
         $pegawaiId = $request->getGet('pegawai_id') ?? ''; // Default: semua pegawai
 
-        // Query builder
+
         $db = \Config\Database::connect();
         $builder = $db->table('izin');
         $builder->select('
@@ -444,9 +444,9 @@ class Izin extends BaseController
         $builder->join('pegawai', 'pegawai.idpegawai = izin.pegawai_id', 'left');
         $builder->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left');
 
-        // Filter berdasarkan tanggal (dengan pendekatan overlap)
+
         if (!empty($startDate) && !empty($endDate)) {
-            // Mencari izin yang overlap dengan tanggal filter (tidak terlalu ketat)
+
             $builder->groupStart()
                 ->where('izin.created_at <=', $endDate) // izin dimulai sebelum periode filter berakhir
                 ->where('izin.created_at >=', $startDate) // izin berakhir setelah periode filter dimulai
@@ -457,12 +457,12 @@ class Izin extends BaseController
             $builder->where('izin.created_at <=', $endDate);
         }
 
-        // Filter berdasarkan status
+
         if ($status !== '') {
             $builder->where('statusizin', $status);
         }
 
-        // Filter berdasarkan pegawai
+
         if ($pegawaiId !== '') {
             $builder->where('pegawai_id', $pegawaiId);
         }
@@ -470,10 +470,10 @@ class Izin extends BaseController
         $builder->orderBy('izin.created_at', 'DESC');
         $izinList = $builder->get()->getResultArray();
 
-        // Pastikan data pegawai ada
+
         foreach ($izinList as $key => $item) {
             if (empty($item['namapegawai'])) {
-                // Coba ambil data pegawai secara manual
+
                 $pegawai = $db->table('pegawai')
                     ->where('idpegawai', $item['pegawai_id'])
                     ->get()
@@ -484,9 +484,9 @@ class Izin extends BaseController
                 }
             }
 
-            // Perbaiki data jabatan jika tidak ada
+
             if (empty($item['namajabatan']) && !empty($item['pegawai_id'])) {
-                // Ambil data jabatan melalui pegawai
+
                 $jabatan = $db->table('pegawai')
                     ->select('jabatan.namajabatan')
                     ->join('jabatan', 'jabatan.idjabatan = pegawai.jabatanid', 'left')
@@ -500,10 +500,10 @@ class Izin extends BaseController
             }
         }
 
-        // Ambil logo perusahaan
+
         $logoPath = ROOTPATH . 'public/image/logo.png';
 
-        // Konversi logo ke base64 jika ada
+
         if (file_exists($logoPath)) {
             $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
             $logoData = file_get_contents($logoPath);
@@ -512,7 +512,7 @@ class Izin extends BaseController
             $logoBase64 = '';
         }
 
-        // Format tanggal untuk judul
+
         $periodeText = '';
         if (!empty($startDate) && !empty($endDate)) {
             $periodeText = ' Periode ' . date('d-m-Y', strtotime($startDate)) . ' s/d ' . date('d-m-Y', strtotime($endDate));
@@ -530,16 +530,16 @@ class Izin extends BaseController
             'logo' => $logoBase64
         ];
 
-        // Load PDF helper
+
         $pdfHelper = new \App\Helpers\PdfHelper();
 
-        // Generate PDF
+
         $html = view('admin/izin/pdf_template', $data);
 
-        // Filename dengan timestamp
+
         $filename = 'laporan_izin_' . date('Ymd_His') . '.pdf';
 
-        // Generate PDF
+
         return $pdfHelper->generate($html, $filename, 'A4', 'landscape', [
             'attachment' => false // true untuk download, false untuk preview di browser
         ]);
@@ -552,13 +552,13 @@ class Izin extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // 1. Periksa jumlah data izin
+
         $totalIzin = $db->table('izin')->countAllResults();
 
-        // 2. Ambil semua data izin
+
         $izinData = $db->table('izin')->get()->getResultArray();
 
-        // 3. Periksa struktur tabel
+
         $tableInfo = $db->getFieldData('izin');
         $columns = [];
         foreach ($tableInfo as $field) {
@@ -576,7 +576,7 @@ class Izin extends BaseController
             'data' => array_slice($izinData, 0, 10) // Ambil 10 data pertama saja
         ];
 
-        // Tampilkan data dalam format JSON
+
         return $this->response->setJSON($data);
     }
 
@@ -594,7 +594,7 @@ class Izin extends BaseController
             'count' => count($izinList)
         ];
 
-        // Tampilkan semua data dalam JSON format
+
         return $this->response->setJSON($data);
     }
 
@@ -603,11 +603,11 @@ class Izin extends BaseController
      */
     public function add_sample_data()
     {
-        // Ambil ID pegawai yang sudah ada
+
         $db = \Config\Database::connect();
         $pegawaiIds = $db->table('pegawai')->select('idpegawai')->get()->getResultArray();
 
-        // Jika tidak ada pegawai, kembalikan pesan error
+
         if (empty($pegawaiIds)) {
             return $this->response->setJSON([
                 'status' => false,
@@ -615,10 +615,10 @@ class Izin extends BaseController
             ]);
         }
 
-        // Set zona waktu
+
         date_default_timezone_set('Asia/Jakarta');
 
-        // Data izin contoh
+
         $data = [
             [
                 'idizin' => 'IZN' . date('Ymd') . '001',
@@ -639,7 +639,7 @@ class Izin extends BaseController
             ]
         ];
 
-        // Coba simpan data
+
         try {
             $this->izinModel->insertBatch($data);
 
@@ -662,10 +662,10 @@ class Izin extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // 1. Periksa jumlah data
+
         $total = $db->table('izin')->countAllResults();
 
-        // 2. Ambil struktur tabel
+
         $fields = $db->getFieldData('izin');
         $structure = [];
         foreach ($fields as $field) {
@@ -679,7 +679,7 @@ class Izin extends BaseController
             ];
         }
 
-        // 3. Ambil semua data izin (maksimal 5)
+
         $data = [];
         if ($total > 0) {
             $data = $db->table('izin')
@@ -691,11 +691,11 @@ class Izin extends BaseController
                 ->getResultArray();
         }
 
-        // 4. Cek data terkait
+
         $pegawai = $db->table('pegawai')->countAllResults();
         $jabatan = $db->table('jabatan')->countAllResults();
 
-        // 5. Cek raw query terakhir
+
         $lastQuery = $db->getLastQuery();
 
         $result = [

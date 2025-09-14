@@ -350,8 +350,8 @@
                             <label for="taskAssignee" class="form-label">Ditugaskan Kepada</label>
                             <select class="form-select" id="taskAssignee">
                                 <option selected>Admin</option>
-                                <option>Manager</option>
-                                <option>User</option>
+                                <option>Pimpinan</option>
+                                <option>Pegawai</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -605,9 +605,9 @@
 
                         if (data === 'admin') {
                             badgeClass = 'bg-primary';
-                        } else if (data === 'manager') {
+                        } else if (data === 'pimpinan') {
                             badgeClass = 'bg-info';
-                        } else if (data === 'user') {
+                        } else if (data === 'pegawai') {
                             badgeClass = 'bg-dark';
                         }
 

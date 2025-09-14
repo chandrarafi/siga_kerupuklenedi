@@ -31,7 +31,7 @@ class Dashboard extends BaseController
 
     public function index()
     {
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return redirect()->to('/login');
         }
@@ -44,7 +44,7 @@ class Dashboard extends BaseController
             return redirect()->to('/logout');
         }
 
-        // Ambil pengaturan lokasi kantor
+
         $officeSetting = $this->officeSettingModel->first();
         $maxDistance = $officeSetting['radius'] ?? 5; // default 5m jika belum diset
         $officeLocation = [
@@ -57,7 +57,7 @@ class Dashboard extends BaseController
             ->where('tanggal', $today)
             ->first();
 
-        // Statistik absensi bulan ini
+
         $startDate = date('Y-m-01'); // Tanggal awal bulan ini
         $endDate = date('Y-m-t');    // Tanggal akhir bulan ini
 
@@ -68,7 +68,7 @@ class Dashboard extends BaseController
             ->groupBy('status')
             ->findAll();
 
-        // Inisialisasi statistik
+
         $stats = [
             'hadir' => 0,
             'sakit' => 0,
@@ -77,7 +77,7 @@ class Dashboard extends BaseController
             'total' => 0
         ];
 
-        // Hitung total hari kerja bulan ini (tidak termasuk Sabtu & Minggu dan hanya sampai hari ini)
+
         $totalWorkDays = 0;
         $currentDate = strtotime($startDate);
         $today = strtotime(date('Y-m-d')); // Timestamp hari ini
@@ -93,18 +93,18 @@ class Dashboard extends BaseController
 
         $stats['total'] = $totalWorkDays;
 
-        // Isi data statistik dari database
+
         foreach ($absensiStats as $stat) {
             if (isset($stats[$stat['status']])) {
                 $stats[$stat['status']] = (int)$stat['total'];
             }
         }
 
-        // Hitung alpa (tidak hadir tanpa keterangan)
+
         $totalAbsensi = $stats['hadir'] + $stats['sakit'] + $stats['izin'];
         $stats['alpa'] = max(0, $totalWorkDays - $totalAbsensi);
 
-        // Ambil data absensi 7 hari terakhir
+
         $date7DaysAgo = date('Y-m-d', strtotime('-7 days'));
         $absensi7Hari = $this->absensiModel->where('idpegawai', $pegawai['idpegawai'])
             ->where('tanggal >=', $date7DaysAgo)
@@ -112,14 +112,14 @@ class Dashboard extends BaseController
             ->orderBy('tanggal', 'DESC')
             ->findAll();
 
-        // Ambil data lembur terbaru
+
         $lemburModel = new \App\Models\LemburModel();
         $lemburTerbaru = $lemburModel->where('pegawai_id', $pegawai['idpegawai'])
             ->orderBy('tanggallembur', 'DESC')
             ->limit(3)
             ->findAll();
 
-        // Ambil data gaji terbaru
+
         $gajiModel = new \App\Models\GajiModel();
         $gajiTerbaru = $gajiModel->where('pegawai_id', $pegawai['idpegawai'])
             ->orderBy('tanggal', 'DESC')
@@ -144,7 +144,7 @@ class Dashboard extends BaseController
 
     public function absenMasuk()
     {
-        // Pastikan ini adalah request AJAX
+
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON([
                 'status' => false,
@@ -152,7 +152,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return $this->response->setJSON([
                 'status' => false,
@@ -170,7 +170,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Cek apakah sudah absen hari ini
+
         $today = date('Y-m-d');
         $absensiHariIni = $this->absensiModel->where('idpegawai', $pegawai['idpegawai'])
             ->where('tanggal', $today)
@@ -183,7 +183,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Ambil data lokasi
+
         $latitude = $this->request->getPost('latitude');
         $longitude = $this->request->getPost('longitude');
 
@@ -194,7 +194,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Ambil pengaturan lokasi kantor
+
         $officeSetting = $this->officeSettingModel->first();
         $maxDistance = $officeSetting['radius'] ?? 5; // default 5m jika belum diset
         $officeLocation = [
@@ -202,7 +202,7 @@ class Dashboard extends BaseController
             'longitude' => $officeSetting['longitude'] ?? 100.3534272
         ];
 
-        // Hitung jarak dengan lokasi kantor
+
         $distance = $this->calculateDistance(
             $latitude,
             $longitude,
@@ -210,7 +210,7 @@ class Dashboard extends BaseController
             $officeLocation['longitude']
         );
 
-        // Cek jarak maksimum
+
         if ($distance > $maxDistance) {
             return $this->response->setJSON([
                 'status' => false,
@@ -218,22 +218,22 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Ambil pengaturan jam masuk
+
         $absensiSetting = $this->absensiSettingModel->first();
         $jamMasuk = $absensiSetting['jam_masuk'] ?? '08:00:00';
 
-        // Cek waktu absen
+
         $now = time();
         $batasJamMasuk = strtotime(date('Y-m-d') . ' ' . $jamMasuk);
         $isTerlambat = $now > $batasJamMasuk;
 
-        // Hitung keterlambatan dalam menit
+
         $terlambat = 0;
         if ($isTerlambat) {
             $terlambat = floor(($now - $batasJamMasuk) / 60);
         }
 
-        // Simpan data absensi
+
         $data = [
             'idpegawai' => $pegawai['idpegawai'],
             'tanggal' => $today,
@@ -263,7 +263,7 @@ class Dashboard extends BaseController
 
     public function absenPulang()
     {
-        // Pastikan ini adalah request AJAX
+
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON([
                 'status' => false,
@@ -271,7 +271,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return $this->response->setJSON([
                 'status' => false,
@@ -289,7 +289,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Cek apakah sudah absen masuk hari ini
+
         $today = date('Y-m-d');
         $absensiHariIni = $this->absensiModel->where('idpegawai', $pegawai['idpegawai'])
             ->where('tanggal', $today)
@@ -309,11 +309,11 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Ambil pengaturan jam pulang
+
         $absensiSetting = $this->absensiSettingModel->first();
         $jamPulang = $absensiSetting['jam_pulang'] ?? '17:00:00';
 
-        // Cek waktu absen pulang
+
         $now = time();
         $batasJamPulang = strtotime(date('Y-m-d') . ' ' . $jamPulang); // Minimal jam 14:00 untuk absen pulang
 
@@ -324,7 +324,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Ambil data lokasi
+
         $latitude = $this->request->getPost('latitude');
         $longitude = $this->request->getPost('longitude');
 
@@ -335,7 +335,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Ambil pengaturan lokasi kantor
+
         $officeSetting = $this->officeSettingModel->first();
         $maxDistance = $officeSetting['radius'] ?? 20; // default 20m jika belum diset
         $officeLocation = [
@@ -343,7 +343,7 @@ class Dashboard extends BaseController
             'longitude' => $officeSetting['longitude'] ?? 100.3534272
         ];
 
-        // Hitung jarak dengan lokasi kantor
+
         $distance = $this->calculateDistance(
             $latitude,
             $longitude,
@@ -351,7 +351,7 @@ class Dashboard extends BaseController
             $officeLocation['longitude']
         );
 
-        // Cek jarak maksimum
+
         if ($distance > $maxDistance) {
             return $this->response->setJSON([
                 'status' => false,
@@ -359,7 +359,7 @@ class Dashboard extends BaseController
             ]);
         }
 
-        // Update data absensi
+
         $data = [
             'jamkeluar' => date('Y-m-d H:i:s'),
             'latitude_keluar' => $latitude,
@@ -376,7 +376,7 @@ class Dashboard extends BaseController
 
     public function riwayat($bulan = null, $tahun = null)
     {
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return redirect()->to('/login');
         }
@@ -389,7 +389,7 @@ class Dashboard extends BaseController
             return redirect()->to('/logout');
         }
 
-        // Default ke bulan dan tahun saat ini jika tidak ada parameter
+
         if ($bulan === null) {
             $bulan = date('n');
         }
@@ -398,11 +398,11 @@ class Dashboard extends BaseController
             $tahun = date('Y');
         }
 
-        // Konversi ke integer
+
         $bulan = (int)$bulan;
         $tahun = (int)$tahun;
 
-        // Validasi bulan dan tahun
+
         if ($bulan < 1 || $bulan > 12) {
             $bulan = date('n');
         }
@@ -411,18 +411,18 @@ class Dashboard extends BaseController
             $tahun = date('Y');
         }
 
-        // Format tanggal untuk query
+
         $startDate = sprintf('%04d-%02d-01', $tahun, $bulan);
         $endDate = date('Y-m-t', strtotime($startDate));
 
-        // Ambil data absensi
+
         $absensi = $this->absensiModel->where('idpegawai', $pegawai['idpegawai'])
             ->where('tanggal >=', $startDate)
             ->where('tanggal <=', $endDate)
             ->orderBy('tanggal', 'DESC')
             ->findAll();
 
-        // Statistik absensi bulan ini
+
         $absensiStats = $this->absensiModel->select('status, COUNT(*) as total')
             ->where('idpegawai', $pegawai['idpegawai'])
             ->where('tanggal >=', $startDate)
@@ -430,7 +430,7 @@ class Dashboard extends BaseController
             ->groupBy('status')
             ->findAll();
 
-        // Inisialisasi statistik
+
         $stats = [
             'hadir' => 0,
             'sakit' => 0,
@@ -439,7 +439,7 @@ class Dashboard extends BaseController
             'total' => 0
         ];
 
-        // Hitung total hari kerja bulan ini (tidak termasuk Sabtu & Minggu dan hanya sampai hari ini)
+
         $totalWorkDays = 0;
         $currentDate = strtotime($startDate);
         $today = strtotime(date('Y-m-d')); // Timestamp hari ini
@@ -455,14 +455,14 @@ class Dashboard extends BaseController
 
         $stats['total'] = $totalWorkDays;
 
-        // Isi data statistik dari database
+
         foreach ($absensiStats as $stat) {
             if (isset($stats[$stat['status']])) {
                 $stats[$stat['status']] = (int)$stat['total'];
             }
         }
 
-        // Hitung alpa (tidak hadir tanpa keterangan)
+
         $totalAbsensi = $stats['hadir'] + $stats['sakit'] + $stats['izin'];
         $stats['alpa'] = max(0, $totalWorkDays - $totalAbsensi);
 
@@ -483,7 +483,7 @@ class Dashboard extends BaseController
      */
     public function lembur($bulan = null, $tahun = null)
     {
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return redirect()->to('/login');
         }
@@ -496,7 +496,7 @@ class Dashboard extends BaseController
             return redirect()->to('/logout');
         }
 
-        // Set bulan dan tahun default jika tidak ada
+
         if (!$bulan) {
             $bulan = date('m');
         }
@@ -504,10 +504,10 @@ class Dashboard extends BaseController
             $tahun = date('Y');
         }
 
-        // Load model lembur
+
         $lemburModel = new \App\Models\LemburModel();
 
-        // Ambil data lembur untuk bulan dan tahun yang dipilih
+
         $startDate = $tahun . '-' . $bulan . '-01';
         $endDate = date('Y-m-t', strtotime($startDate));
 
@@ -518,13 +518,13 @@ class Dashboard extends BaseController
             ->orderBy('tanggallembur', 'DESC')
             ->findAll();
 
-        // Hitung total jam lembur
+
         $totalLembur = 0;
         foreach ($lembur as $row) {
             $jammulai = strtotime($row['jammulai']);
             $jamselesai = strtotime($row['jamselesai']);
 
-            // Jika jamselesai lebih kecil dari jammulai, berarti melewati tengah malam
+
             if ($jamselesai < $jammulai) {
                 $jamselesai += 86400; // Tambah 24 jam
             }
@@ -551,7 +551,7 @@ class Dashboard extends BaseController
      */
     public function gaji($bulan = null, $tahun = null)
     {
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return redirect()->to('/login');
         }
@@ -564,7 +564,7 @@ class Dashboard extends BaseController
             return redirect()->to('/logout');
         }
 
-        // Set bulan dan tahun default jika tidak ada
+
         if (!$bulan) {
             $bulan = date('m');
         }
@@ -572,13 +572,13 @@ class Dashboard extends BaseController
             $tahun = date('Y');
         }
 
-        // Load model gaji
+
         $gajiModel = new \App\Models\GajiModel();
 
-        // Format periode untuk pencarian
+
         $periode = $bulan . '-' . $tahun;
 
-        // Ambil data gaji untuk periode yang dipilih
+
         $gaji = $gajiModel->where('pegawai_id', $pegawai['idpegawai'])
             ->where('periode', $periode)
             ->orderBy('tanggal', 'DESC')
@@ -600,7 +600,7 @@ class Dashboard extends BaseController
      */
     public function slipGaji($id)
     {
-        // Pastikan user sudah login dan memiliki role pegawai
+
         if (!$this->session->has('user_id') || $this->session->get('role') !== 'pegawai') {
             return redirect()->to('/login');
         }
@@ -613,28 +613,28 @@ class Dashboard extends BaseController
             return redirect()->to('/logout');
         }
 
-        // Load model gaji
+
         $gajiModel = new \App\Models\GajiModel();
 
-        // Ambil detail gaji
+
         $gaji = $gajiModel->getGajiWithPegawai($id);
 
-        // Verifikasi bahwa gaji ini milik pegawai yang sedang login
+
         if (!$gaji || $gaji['pegawai_id'] != $pegawai['idpegawai']) {
             $this->session->setFlashdata('error', 'Data slip gaji tidak ditemukan');
             return redirect()->to('pegawai/dashboard/gaji');
         }
 
-        // Ambil setting office untuk perhitungan komponen gaji
+
         $officeSettingModel = new \App\Models\OfficeSettingModel();
         $setting = $officeSettingModel->first();
 
-        // Nilai default jika setting tidak ditemukan
+
         $tunjanganTransport = $setting['tunjangan_transport'] ?? 10000;
         $tunjanganMakan = $setting['tunjangan_makan'] ?? 15000;
         $tarifLembur = $setting['tarif_lembur'] ?? 20000; // Per jam
 
-        // Ambil data jabatan dan gaji pokok
+
         $db = \Config\Database::connect();
         $dataPegawai = $db->table('pegawai')
             ->select('pegawai.*, jabatan.namajabatan as nama_jabatan, jabatan.gajipokok, bagian.namabagian')
@@ -644,7 +644,7 @@ class Dashboard extends BaseController
             ->get()
             ->getRowArray();
 
-        // Tambahkan data jabatan dan bagian ke dalam array gaji
+
         $gaji['nama_jabatan'] = $dataPegawai['nama_jabatan'] ?? '-';
         $gaji['namabagian'] = $dataPegawai['namabagian'] ?? '-';
 
@@ -682,7 +682,7 @@ class Dashboard extends BaseController
         return view('pegawai/slip_gaji', $data);
     }
 
-    // Fungsi untuk menghitung jarak dalam meter
+
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         $R = 6371000; // Radius bumi dalam meter
