@@ -1,12 +1,10 @@
 <?= $this->extend('admin/layouts/main') ?>
-
 <?= $this->section('content') ?>
 <div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Data Absensi</h5>
-
             </div>
             <div class="card-body">
                 <div class="row mb-3">
@@ -36,7 +34,6 @@
                         <?php endif; ?>
                     </div>
                 </div>
-
                 <div class="table-responsive">
                     <table id="absensi-table" class="table table-striped table-hover">
                         <thead>
@@ -51,17 +48,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($absensi)) : ?>
-                                <tr>
-                                    <td colspan="8" class="text-center">
-                                        <?php if (!empty($_GET['tanggal'])): ?>
-                                            Tidak ada data absensi pada tanggal <?= date('d-m-Y', strtotime($tanggal)) ?>
-                                        <?php else: ?>
-                                            Tidak ada data absensi
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php else : ?>
+                            <?php if (!empty($absensi)) : ?>
                                 <?php $no = 1;
                                 foreach ($absensi as $row) : ?>
                                     <tr>
@@ -82,7 +69,6 @@
                                             <?php endif; ?>
                                         </td>
                                         <td><?= $row['keterangan'] ?: '-' ?></td>
-
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -94,7 +80,6 @@
     </div>
 </div>
 <?= $this->endSection() ?>
-
 <?= $this->section('styles') ?>
 <!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
@@ -110,36 +95,41 @@
     }
 </style>
 <?= $this->endSection() ?>
-
 <?= $this->section('scripts') ?>
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
 <script>
     $(document).ready(function() {
-        // Inisialisasi DataTables
-        $('#absensi-table').DataTable({
+        // Tentukan pesan kosong berdasarkan filter tanggal
+        var emptyMessage = '<?php if (!empty($_GET["tanggal"])): ?>Tidak ada data absensi pada tanggal <?= date("d-m-Y", strtotime($tanggal)) ?><?php else: ?>Tidak ada data absensi<?php endif; ?>';
+
+        // Inisialisasi DataTables dengan konfigurasi khusus
+        var dataTable = $('#absensi-table').DataTable({
             responsive: true,
             language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+                url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
+                emptyTable: emptyMessage
             },
             "columnDefs": [{
-                    "orderable": false,
-                    "targets": [6]
-                } // Kolom aksi tidak bisa diurutkan
-            ],
+                "orderable": false,
+                "targets": [6]
+            }],
             "order": [
                 [1, 'desc'],
                 [2, 'desc']
-            ] // Urutkan berdasarkan tanggal (kolom 2) dan jam masuk (kolom 3)
+            ],
+            // Pastikan DataTables tidak menambah baris kosong
+            "bLengthChange": false,
+            "bInfo": false,
+            "bPaginate": false,
+            "bFilter": false
         });
 
         // Konfirmasi hapus
         $('.btn-delete').on('click', function(e) {
             e.preventDefault();
             const href = $(this).attr('href');
-
             Swal.fire({
                 title: 'Konfirmasi Hapus',
                 text: 'Apakah Anda yakin ingin menghapus data absensi ini?',
