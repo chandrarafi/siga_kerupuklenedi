@@ -44,7 +44,7 @@ class RoleFilter implements FilterInterface
             if ($role == 'admin') {
                 return redirect()->to('/admin/dashboard');
             } elseif ($role == 'pegawai') {
-                return redirect()->to('/admin/dashboard');
+                return redirect()->to('/pegawai/dashboard');
             } else {
                 return redirect()->to('/login');
             }
